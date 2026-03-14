@@ -20,15 +20,16 @@ export const UserProvider = ({ children }) => {
 
             const data = await authAPI.getMe();
             
-            // Strictly enforce admin role
-            if (data.user?.role !== 'admin') {
+            // Strictly enforce admin role using the profile data from backend
+            if (data.profile?.role !== 'admin') {
                 setIsAuthenticated(false);
                 setUser(null);
                 localStorage.removeItem('admin_auth_token');
                 return;
             }
 
-            setUser(data.user);
+            // Combine Supabase user and Database profile data
+            setUser({ ...data.user, ...data.profile });
             setIsAuthenticated(true);
         } catch (error) {
             console.error('Auth check failed:', error);

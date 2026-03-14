@@ -7,7 +7,7 @@ import { useToast } from '../../contexts/ToastContext';
 import '../../styles/admin-login.css';
 
 const AdminLogin = () => {
-    const [email, setEmail] = useState('');
+    const [adminId, setAdminId] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -22,7 +22,7 @@ const AdminLogin = () => {
         setError('');
 
         try {
-            await authAPI.login(email, password);
+            await authAPI.login(adminId, password);
             await checkAuth();
             toast.popup('Admin authenticated successfully', 'success');
             navigate('/dashboard', { replace: true });
@@ -61,11 +61,11 @@ const AdminLogin = () => {
                             <div className="landing-modal__input">
                                 <Terminal />
                                 <input
-                                    type="email"
+                                    type="text"
                                     required
-                                    placeholder="Enter your admin email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
+                                    placeholder="e.g. 22-A-00001"
+                                    value={adminId}
+                                    onChange={(e) => setAdminId(e.target.value)}
                                     autoFocus
                                 />
                             </div>

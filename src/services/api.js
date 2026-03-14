@@ -38,10 +38,10 @@ const apiRequest = async (endpoint, options = {}) => {
 };
 
 export const authAPI = {
-    login: async (email, password) => {
+    login: async (adminId, password) => {
         const data = await apiRequest('/auth/login', {
             method: 'POST',
-            body: JSON.stringify({ email, password, expected_role: 'admin' }),
+            body: JSON.stringify({ student_id: adminId, password, expected_role: 'admin' }),
         });
         if (data.session?.access_token) {
             setToken(data.session.access_token);

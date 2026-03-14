@@ -1,4 +1,6 @@
-@import "tailwindcss";
+﻿@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 @font-face {
   font-family: 'GamePaused';
@@ -10,37 +12,27 @@
   src: url('./assets/GALSB.ttf') format('truetype');
 }
 
-@theme {
-  --color-primary: #6D28D9;
-  --color-primary-dark: #4C1D95;
-  --color-accent: #FBBF24;
-  --color-node-active: #22D3EE;
-  --color-surface: rgba(255, 255, 255, 0.1);
-  --font-inter: "Inter", sans-serif;
-  --font-game-paused: "GamePaused", sans-serif;
-  --font-galsb: "Galsb", sans-serif;
-}
-
-@layer utilities {
-  .vertical-text {
-    writing-mode: vertical-rl;
-    text-orientation: mixed;
-  }
-}
-
 @layer base {
   html {
     font-size: 13px;
   }
 
   body {
-    @apply bg-slate-950 text-slate-50 font-inter antialiased;
+    @apply bg-slate-950 text-slate-50 antialiased;
+    font-family: 'Inter', sans-serif;
     margin: 0;
     min-height: 100vh;
   }
 
   #root {
     min-height: 100vh;
+  }
+}
+
+@layer utilities {
+  .vertical-text {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
   }
 }
 
@@ -54,13 +46,8 @@
   }
 
   @keyframes shimmer {
-    0% {
-      background-position: -200% 0;
-    }
-
-    100% {
-      background-position: 200% 0;
-    }
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
   }
 
   .animate-shimmer {
@@ -73,15 +60,8 @@
   }
 
   @keyframes glow-pulse {
-
-    0%,
-    100% {
-      filter: drop-shadow(0 0 5px rgba(34, 211, 238, 0.6));
-    }
-
-    50% {
-      filter: drop-shadow(0 0 15px rgba(34, 211, 238, 0.9));
-    }
+    0%, 100% { filter: drop-shadow(0 0 5px rgba(34, 211, 238, 0.6)); }
+    50% { filter: drop-shadow(0 0 15px rgba(34, 211, 238, 0.9)); }
   }
 
   .glow-path {
@@ -92,7 +72,6 @@
     @apply transition-transform duration-300 hover:scale-110 active:scale-95 cursor-pointer;
   }
 
-  /* Custom Scrollbar Utility */
   .custom-scrollbar::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -103,7 +82,7 @@
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: var(--scrollbar-thumb, rgba(255, 255, 255, 0.1));
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 10px;
     transition: background 0.2s ease;
   }
@@ -113,13 +92,8 @@
   }
 
   @keyframes scan {
-    0% {
-      transform: translateY(-100%);
-    }
-
-    100% {
-      transform: translateY(100%);
-    }
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(100%); }
   }
 
   .animate-scan {

@@ -103,7 +103,7 @@ const AdminLogin = () => {
                                     Authenticating...
                                 </div>
                             ) : (
-                                'Initiate Uplink'
+                                'Login'
                             )}
                         </button>
                     </form>

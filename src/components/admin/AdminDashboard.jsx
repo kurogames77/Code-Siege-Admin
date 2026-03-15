@@ -1,6 +1,6 @@
-import React from 'react';
-import { Activity, Server, Users, FileText, Activity as ActivityIcon } from 'lucide-react';
-import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
+import React, { useState, useEffect } from 'react';
+import { Activity, Server, Users, FileText, Activity as ActivityIcon, TrendingUp, MousePointer2 } from 'lucide-react';
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { instructorAPI } from '../../services/api';
 
 const AdminDashboard = ({ theme = 'dark' }) => {
@@ -14,12 +14,12 @@ const AdminDashboard = ({ theme = 'dark' }) => {
             second: '2-digit'
         });
     };
-    const [stats, setStats] = React.useState([
+    const [stats, setStats] = useState([
         { label: 'Total Students', value: '0', status: 'Total', icon: Users, color: 'text-cyan-500', bg: 'bg-cyan-500' },
         { label: 'Total Instructors', value: '0', status: 'Total', icon: Server, color: 'text-purple-500', bg: 'bg-purple-500' },
         { label: 'Total Applicants', value: '0', status: 'Total', icon: FileText, color: 'text-amber-500', bg: 'bg-amber-500' },
     ]);
-    const [instructorActivity, setInstructorActivity] = React.useState([
+    const [instructorActivity, setInstructorActivity] = useState([
         { month: 'Jan', active: 1 }, { month: 'Feb', active: 0 },
         { month: 'Mar', active: 0 }, { month: 'Apr', active: 0 },
         { month: 'May', active: 0 }, { month: 'Jun', active: 0 },
@@ -27,6 +27,21 @@ const AdminDashboard = ({ theme = 'dark' }) => {
         { month: 'Sep', active: 0 }, { month: 'Oct', active: 0 },
         { month: 'Nov', active: 0 }, { month: 'Dec', active: 0 },
     ]);
+    const [studentData, setStudentData] = useState([
+        { month: 'Jan', count: 0 }, { month: 'Feb', count: 0 },
+        { month: 'Mar', count: 0 }, { month: 'Apr', count: 0 },
+        { month: 'May', count: 0 }, { month: 'Jun', count: 0 },
+    ]);
+    const [battleDistribution, setBattleDistribution] = useState([
+        { name: '1v1 Duels', value: 0, color: '#F43F5E' },
+        { name: 'Multiplayer', value: 0, color: '#A855F7' },
+    ]);
+
+    const chartColors = {
+        text: theme === 'dark' ? '#94a3b8' : '#64748b',
+        tooltipBg: theme === 'dark' ? '#0F172A' : '#FFFFFF',
+        tooltipBorder: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+    };
 
     React.useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -43,6 +58,18 @@ const AdminDashboard = ({ theme = 'dark' }) => {
                 if (data.instructorActivity) {
                     setInstructorActivity(data.instructorActivity);
                 }
+
+                // Update the student data and battle distribution based on stats
+                setStudentData([
+                    { month: 'Jan', count: 0 }, { month: 'Feb', count: 0 },
+                    { month: 'Mar', count: 0 }, { month: 'Apr', count: 0 },
+                    { month: 'May', count: 0 }, { month: 'Jun', count: data.totalStudents },
+                ]);
+
+                setBattleDistribution([
+                    { name: '1v1 Duels', value: data.totalBattles || 0, color: '#F43F5E' },
+                    { name: 'Multiplayer', value: 0, color: '#A855F7' },
+                ]);
             } catch (error) {
                 console.error('Failed to fetch dashboard stats:', error);
             }
@@ -121,6 +148,92 @@ const AdminDashboard = ({ theme = 'dark' }) => {
                             <Area type="monotone" dataKey="active" stroke="#06b6d4" strokeWidth={3} fillOpacity={1} fill="url(#colorActivity)" />
                         </AreaChart>
                     </ResponsiveContainer>
+                </div>
+            </div>
+
+            {/* Additional Charts Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* 1. Total Students Bar Chart */}
+                <div className={`border rounded-[2.5rem] p-8 backdrop-blur-sm relative overflow-hidden transition-all duration-500 ${theme === 'dark' ? 'bg-[#0B1224]/40 border-white/5' : 'bg-white border-slate-200 shadow-sm'}`}>
+                    <div className="flex items-center justify-between mb-8">
+                        <div>
+                            <h3 className={`text-xs font-black uppercase tracking-[0.3em] transition-colors ${theme === 'dark' ? 'text-slate-400' : 'text-slate-400'}`}>Student Growth</h3>
+                            <p className={`text-lg font-black italic mt-1 transition-colors ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>Monthly Registrations</p>
+                        </div>
+                        <div className={`p-2 rounded-lg transition-colors ${theme === 'dark' ? 'bg-cyan-500/10 text-cyan-400' : 'bg-cyan-50 text-cyan-600'}`}>
+                            <TrendingUp className="w-4 h-4" />
+                        </div>
+                    </div>
+                    <div className="h-[200px] w-full">
+                        <ResponsiveContainer width="99%" height="100%">
+                            <BarChart data={studentData}>
+                                <Tooltip
+                                    cursor={{ fill: theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)' }}
+                                    contentStyle={{
+                                        background: chartColors.tooltipBg,
+                                        border: `1px solid ${chartColors.tooltipBorder}`,
+                                        borderRadius: '12px',
+                                        fontSize: '10px',
+                                        color: theme === 'dark' ? '#FFF' : '#000',
+                                        boxShadow: '0 10px 20px rgba(0,0,0,0.05)'
+                                    }}
+                                />
+                                <Bar
+                                    dataKey="count"
+                                    fill={theme === 'dark' ? '#06B6D4' : '#0891B2'}
+                                    radius={[4, 4, 0, 0]}
+                                    className={theme === 'dark' ? "drop-shadow-[0_0_8px_rgba(6,182,212,0.3)]" : ""}
+                                />
+                                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: chartColors.text, fontSize: 10 }} />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+
+                {/* 2. Arena Battles Pie Chart */}
+                <div className={`border rounded-[2.5rem] p-8 backdrop-blur-sm relative overflow-hidden transition-all duration-500 ${theme === 'dark' ? 'bg-[#0B1224]/40 border-white/5' : 'bg-white border-slate-200 shadow-sm'}`}>
+                    <div className="flex items-center justify-between mb-8">
+                        <div>
+                            <h3 className={`text-xs font-black uppercase tracking-[0.3em] transition-colors ${theme === 'dark' ? 'text-slate-400' : 'text-slate-400'}`}>Arena Distribution</h3>
+                            <p className={`text-lg font-black italic mt-1 transition-colors ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>Match Types</p>
+                        </div>
+                        <div className={`p-2 rounded-lg transition-colors ${theme === 'dark' ? 'bg-rose-500/10 text-rose-400' : 'bg-rose-50 text-rose-600'}`}>
+                            <MousePointer2 className="w-4 h-4" />
+                        </div>
+                    </div>
+                    <div className="h-[240px] w-full flex items-center">
+                        <div className="w-1/2 h-full">
+                            <ResponsiveContainer width="99%" height="100%">
+                                <PieChart>
+                                    <Pie
+                                        data={battleDistribution}
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={60}
+                                        outerRadius={80}
+                                        paddingAngle={5}
+                                        dataKey="value"
+                                        stroke="none"
+                                    >
+                                        {battleDistribution.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={entry.color} />
+                                        ))}
+                                    </Pie>
+                                </PieChart>
+                            </ResponsiveContainer>
+                        </div>
+                        <div className="w-1/2 space-y-4 pr-4">
+                            {battleDistribution.map((item) => (
+                                <div key={item.name} className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
+                                        <span className={`text-[10px] font-black uppercase tracking-widest transition-colors ${theme === 'dark' ? 'text-slate-600' : 'text-slate-500'}`}>{item.name}</span>
+                                    </div>
+                                    <span className={`text-xs font-black italic transition-colors ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>{item.value}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

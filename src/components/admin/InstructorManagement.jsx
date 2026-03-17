@@ -4,8 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { instructorAPI } from '../../services/api';
 
 const InstructorManagement = ({ theme = 'dark' }) => {
-    // Mock Data for Applications
-    const [applications, setApplications] = useState([]);
 
     // Live Data for Users
     const [instructors, setInstructors] = useState([]);
@@ -20,13 +18,7 @@ const InstructorManagement = ({ theme = 'dark' }) => {
     const fetchUsers = async () => {
         setIsLoading(true);
         try {
-            // Fetch applications
-            const appsResponse = await instructorAPI.getApplications();
-            if (appsResponse.applications) {
-                setApplications(appsResponse.applications);
-            }
-
-            // Fetch users (instructors & students) - assuming we fetch a big chunk or all
+            // Fetch users (instructors & admin)
             const response = await instructorAPI.getUsers(1, 1000);
             if (response.users) {
                 const filteredInstructors = response.users
@@ -81,27 +73,6 @@ const InstructorManagement = ({ theme = 'dark' }) => {
         }
     };
 
-    // --- Application Actions ---
-    const handleApprove = async (app) => {
-        try {
-            await instructorAPI.approveApplication(app.id);
-            fetchUsers();
-        } catch (error) {
-            console.error('Failed to approve application', error);
-        }
-    };
-    
-    const handleReject = async (id) => {
-        if(window.confirm('Are you sure you want to reject this application?')) {
-            try {
-                await instructorAPI.rejectApplication(id, 'Rejected by admin');
-                fetchUsers();
-            } catch (error) {
-                console.error('Failed to reject application', error);
-            }
-        }
-    };
-
     // --- Instructor Handlers ---
     const handleUpdateInstructor = (instructor) => {
         setEditingInstructor(instructor);
@@ -152,83 +123,8 @@ const InstructorManagement = ({ theme = 'dark' }) => {
         <div className="flex flex-col h-full gap-8 overflow-y-auto overflow-x-hidden custom-scrollbar pb-10 pr-2">
             <style>{scrollbarStyles}</style>
             
-            {/* TOP ROW: Applications & Instructors */}
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 shrink-0 min-h-[400px]">
-                
-                {/* LEFT COLUMN: APPLICATIONS */}
-                <div className={`flex flex-col h-[500px] border rounded-2xl p-6 transition-colors duration-500 ${theme === 'dark' ? 'bg-[#0B1224] border-cyan-500/20' : 'bg-white border-slate-200'}`}>
-                    <div className="mb-6 flex-none">
-                        <h2 className={`text-xl font-black uppercase italic tracking-tighter flex items-center gap-2 mb-4 transition-colors duration-500 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-                            Instructor <span className="text-cyan-500">Applications</span>
-                            <span className={`text-xs font-bold px-2 py-0.5 rounded-full not-italic tracking-normal transition-colors duration-500 ${theme === 'dark' ? 'text-slate-500 bg-slate-800' : 'text-slate-400 bg-slate-100'}`}>{applications.filter(a => a.status === 'pending').length} Pending</span>
-                        </h2>
-                    </div>
-
-                    <div className="flex-1 overflow-y-auto custom-scrollbar space-y-3 pr-2">
-                        <AnimatePresence mode="popLayout">
-                            {applications.map((app) => (
-                                <motion.div
-                                    key={app.id}
-                                    layout
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, scale: 0.95 }}
-                                    className={`p-4 rounded-xl border transition-all relative overflow-hidden group ${app.status === 'pending'
-                                        ? (theme === 'dark' ? 'bg-[#0B1224]/60 border-white/5 hover:border-cyan-500/30' : 'bg-white border-slate-200 shadow-sm hover:border-cyan-500/50')
-                                        : 'opacity-60 grayscale bg-slate-100/10 border-transparent'
-                                        }`}
-                                >
-                                    <div className="flex items-start justify-between relative z-10">
-                                        <div className="flex gap-4">
-                                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold uppercase flex-shrink-0 ${getStatusColor(app.status)}`}>
-                                                {app.username?.charAt(0) || 'A'}
-                                            </div>
-                                            <div>
-                                                <h3 className={`font-bold text-base flex items-center gap-2 transition-colors duration-500 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-                                                    {app.username || 'Unknown Applicant'}
-                                                    <span className={`text-[9px] uppercase px-1.5 py-0.5 rounded border ${getStatusColor(app.status)}`}>{app.status}</span>
-                                                </h3>
-                                                <div className="flex flex-col gap-1 text-[11px] text-slate-400 mt-1 font-medium">
-                                                    <span className="flex items-center gap-1.5"><Mail className="w-3 h-3 text-slate-500" /> {app.email}</span>
-                                                    <span className="flex items-center gap-1.5"><Calendar className="w-3 h-3 text-slate-500" /> Applied: {new Date(app.created_at).toLocaleDateString()}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Actions */}
-                                        {app.status === 'pending' && (
-                                            <div className="flex flex-col gap-2">
-                                                <button
-                                                    onClick={() => handleApprove(app)}
-                                                    className="p-1.5 rounded bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 hover:bg-emerald-500 hover:text-white transition-colors"
-                                                    title="Approve"
-                                                >
-                                                    <CheckCircle className="w-4 h-4" />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleReject(app.id)}
-                                                    className="p-1.5 rounded bg-rose-500/10 text-rose-500 border border-rose-500/20 hover:bg-rose-500 hover:text-white transition-colors"
-                                                    title="Reject"
-                                                >
-                                                    <XCircle className="w-4 h-4" />
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
-                                </motion.div>
-                            ))}
-                            {applications.length === 0 && (
-                                <div className={`p-12 text-center rounded-2xl border border-dashed transition-all duration-500 ${theme === 'dark' ? 'border-white/10 text-slate-500' : 'border-slate-200 text-slate-400'}`}>
-                                    <FileText className="w-8 h-8 mx-auto mb-3 opacity-20" />
-                                    <p className="text-sm font-bold uppercase tracking-widest">No pending applications</p>
-                                </div>
-                            )}
-                        </AnimatePresence>
-                    </div>
-                </div>
-
-                {/* RIGHT COLUMN: ACTIVE INSTRUCTORS */}
-                <div className={`flex flex-col h-[500px] border rounded-2xl p-6 transition-colors duration-500 ${theme === 'dark' ? 'bg-[#0B1224] border-cyan-500/20' : 'bg-white border-slate-200'}`}>
+            {/* ACTIVE INSTRUCTORS */}
+            <div className={`flex flex-col flex-1 border rounded-2xl p-6 transition-colors duration-500 ${theme === 'dark' ? 'bg-[#0B1224] border-cyan-500/20' : 'bg-white border-slate-200'}`}>
                     <div className="mb-6 flex-none">
                         <h2 className={`text-xl font-black uppercase italic tracking-tighter flex items-center gap-2 mb-4 transition-colors duration-500 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                             Instructor <span className="text-cyan-500">Management</span>
@@ -316,7 +212,6 @@ const InstructorManagement = ({ theme = 'dark' }) => {
                         </AnimatePresence>
                     </div>
                 </div>
-            </div>
 
             {/* INSTRUCTOR Edit Modal */}
             <AnimatePresence>

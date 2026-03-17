@@ -16,7 +16,6 @@ const AdminPage = () => {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('overview');
     const [theme, setTheme] = useState('dark');
-    const [isDuplicateTab, setIsDuplicateTab] = useState(false);
 
     useEffect(() => {
         if (!loading) {
@@ -33,56 +32,10 @@ const AdminPage = () => {
         }
     }, [loading, isAuthenticated, user, navigate]);
 
-    // Implementation of 1-Tab Policy using BroadcastChannel API
-    useEffect(() => {
-        if (!isAuthenticated || user?.role !== 'admin') return;
-
-        const channel = new BroadcastChannel('admin_dashboard_channel');
-        
-        // Listen for messages on the channel
-        channel.onmessage = (event) => {
-            if (event.data === 'PING') {
-                // If I am already open, tell the new tab that the dashboard is already active!
-                if (!isDuplicateTab) {
-                    channel.postMessage('PONG');
-                }
-            } else if (event.data === 'PONG') {
-                // If I just pinged and received a PONG, someone else is the leader. I should block myself.
-                setIsDuplicateTab(true);
-            }
-        };
-
-        // Broadcast to see if any other tab is already managing the Dashboard
-        channel.postMessage('PING');
-
-        return () => {
-            channel.close();
-        };
-    }, [isAuthenticated, user, isDuplicateTab]);
-
     if (loading) return <div className="min-h-screen bg-[#020617] flex items-center justify-center text-cyan-500">Loading Console...</div>;
 
     // Strict Access Control
     if (!isAuthenticated || user?.role !== 'admin') return null;
-
-    if (isDuplicateTab) {
-        return (
-            <div className={`flex flex-col items-center justify-center h-screen transition-colors duration-500 ${theme === 'dark' ? 'bg-[#020617] text-slate-200' : 'bg-slate-50 text-slate-900'}`}>
-                <div className="p-10 max-w-xl text-center">
-                    <div className="w-20 h-20 bg-red-500/10 text-red-500 border border-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <div className="text-4xl text-white">🛡️</div>
-                    </div>
-                    <h1 className="text-3xl font-black italic uppercase tracking-tighter mb-4 text-red-500">Duplicate Session Detected</h1>
-                    <p className={`text-lg mb-8 ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
-                        For maximum security isolation, the Admin Control Portal can only be active in one tab at a time. Another secure session is already running.
-                    </p>
-                    <p className={`text-xs font-bold uppercase tracking-widest ${theme === 'dark' ? 'text-cyan-500/50' : 'text-cyan-600/50'}`}>
-                        {`< FORCE FIREWALL ACTIVE >`}
-                    </p>
-                </div>
-            </div>
-        );
-    }
 
     const toggleTheme = () => {
         setTheme(prev => prev === 'dark' ? 'light' : 'dark');

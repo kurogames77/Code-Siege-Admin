@@ -17,14 +17,21 @@ const StudentCodesManager = ({ theme }) => {
     const toast = useToast();
     const [copiedId, setCopiedId] = useState(null);
     
+    // Auto-Gen Progress State
+    const [isGeneratingCodes, setIsGeneratingCodes] = useState(false);
+    const [generationProgress, setGenerationProgress] = useState(0);
+    
     // Delete Modal State
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [codeToDelete, setCodeToDelete] = useState(null);
 
-    const handleAutoGenerate = () => {
+    const handleAutoGenerate = async () => {
         let count = parseInt(generateCount, 10);
         if (isNaN(count) || count <= 0) count = 10;
         if (count > 500) count = 500; // Hard limit for safety
+
+        setIsGeneratingCodes(true);
+        setGenerationProgress(0);
 
         const generateRandomString = (length) => {
             const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -35,21 +42,54 @@ const StudentCodesManager = ({ theme }) => {
             return result;
         };
 
+        // Parse existing input to ensure true deductive uniqueness
+        const currentInput = codesInput.trim();
+        const existingCodesArray = currentInput
+            .split(/[\n,]+/)
+            .map(c => c.trim())
+            .filter(c => c.length > 0);
+        
+        const generatedSet = new Set(existingCodesArray);
         const newCodes = [];
-        for (let i = 0; i < count; i++) {
-            // e.g. CS-9X4B-L2M1 or IT-XXXX-XXXX
-            const code = `${codePrefix}-${generateRandomString(4)}-${generateRandomString(4)}`;
-            newCodes.push(code);
+
+        // Chunk generation to yield to react renderer
+        const chunkSize = 50; 
+        
+        for (let i = 0; i < count; ) {
+            const iterations = Math.min(chunkSize, count - i);
+            
+            for (let j = 0; j < iterations; j++) {
+                let code;
+                let isUnique = false;
+                
+                // Keep generating until it's statistically unique
+                while (!isUnique) {
+                    code = `${codePrefix}-${generateRandomString(4)}-${generateRandomString(4)}`;
+                    if (!generatedSet.has(code)) {
+                        generatedSet.add(code);
+                        newCodes.push(code);
+                        isUnique = true;
+                    }
+                }
+                i++;
+            }
+            
+            // Update progress bar dynamically
+            setGenerationProgress((i / count) * 100);
+            
+            // Artificial delay to yield browser thread
+            await new Promise(r => setTimeout(r, 20)); 
         }
 
-        const currentInput = codesInput.trim();
         if (currentInput) {
             setCodesInput(currentInput + ',\n' + newCodes.join(',\n'));
         } else {
             setCodesInput(newCodes.join(',\n'));
         }
         
-        toast.popup(`Auto-generated ${count} secure codes`);
+        setIsGeneratingCodes(false);
+        setGenerationProgress(0);
+        toast.popup(`Auto-generated ${count} secure, unique codes`);
     };
 
     const fetchCodes = async () => {
@@ -181,21 +221,35 @@ const StudentCodesManager = ({ theme }) => {
                                     max="500"
                                     value={generateCount}
                                     onChange={(e) => setGenerateCount(e.target.value)}
-                                    className={`w-16 bg-transparent outline-none text-sm font-bold text-center ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}
+                                    disabled={isGeneratingCodes}
+                                    className={`w-16 bg-transparent outline-none text-sm font-bold text-center ${theme === 'dark' ? 'text-white' : 'text-slate-900'} ${isGeneratingCodes ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 />
                             </div>
-                            <button
-                                onClick={handleAutoGenerate}
-                                className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all ${
-                                    theme === 'dark' 
-                                    ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20 hover:bg-purple-500 hover:text-white' 
-                                    : 'bg-purple-50 text-purple-600 border border-purple-200 hover:bg-purple-600 hover:text-white'
-                                }`}
-                                title="Auto-Generate Secure Codes"
-                            >
-                                <Wand2 className="w-3.5 h-3.5" />
-                                Auto-Gen
-                            </button>
+                            
+                            <div className="flex flex-col gap-2">
+                                {/* Conditional Progress Bar */}
+                                {isGeneratingCodes && (
+                                    <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden absolute -mt-4 left-0 right-0 px-1">
+                                        <div 
+                                            className="bg-cyan-500 h-1.5 rounded-full shadow-[0_0_10px_cyan]"
+                                            style={{ width: `${generationProgress}%`, transition: 'width 0.1s linear' }}
+                                        />
+                                    </div>
+                                )}
+                                <button
+                                    onClick={handleAutoGenerate}
+                                    disabled={isGeneratingCodes || generating}
+                                    className={`relative flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all ${
+                                        theme === 'dark' 
+                                        ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20 hover:bg-purple-500 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed' 
+                                        : 'bg-purple-50 text-purple-600 border border-purple-200 hover:bg-purple-600 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed'
+                                    }`}
+                                    title="Auto-Generate Secure Codes"
+                                >
+                                    {isGeneratingCodes ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Wand2 className="w-3.5 h-3.5" />}
+                                    {isGeneratingCodes ? 'Generating...' : 'Auto-Gen'}
+                                </button>
+                            </div>
                         </div>
                     </div>
                     <button

@@ -30,11 +30,24 @@ const InstructorManagement = ({ theme = 'dark' }) => {
             const response = await instructorAPI.getUsers(1, 1000);
             if (response.users) {
                 // Manually fetch handled_towers and enrolled_language since backend omit them or might return null
-                const instructorIds = response.users.filter(u => u.role === 'instructor' || u.role === 'admin').map(u => u.id);
+                const instructorIds = response.users.filter(u => u.role === 'instructor' || u.role === 'admin').map(u => `'${u.id}'`);
                 let dbUsers = [];
                 try {
-                    const { data } = await supabase.from('users').select('id, enrolled_language, handled_towers').in('id', instructorIds);
-                    dbUsers = data || [];
+                    const token = localStorage.getItem('admin_auth_token');
+                    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+                    const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+                    
+                    if (supabaseUrl && supabaseKey && instructorIds.length > 0) {
+                        const res = await fetch(`${supabaseUrl}/rest/v1/users?id=in.(${instructorIds.join(',')})&select=id,enrolled_language,handled_towers`, {
+                            headers: {
+                                'apikey': supabaseKey,
+                                'Authorization': `Bearer ${token || supabaseKey}`
+                            }
+                        });
+                        if (res.ok) {
+                            dbUsers = await res.json();
+                        }
+                    }
                 } catch (err) {
                     console.warn("Could not fetch extra instructor details from DB directly", err);
                 }

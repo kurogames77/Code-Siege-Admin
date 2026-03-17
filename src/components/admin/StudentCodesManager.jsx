@@ -338,7 +338,6 @@ const StudentCodesManager = ({ theme }) => {
                                 <th className="p-4">Status</th>
                                 <th className="p-4">Used By</th>
                                 <th className="p-4">Created At</th>
-                                <th className="p-4 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -351,7 +350,7 @@ const StudentCodesManager = ({ theme }) => {
                                 </tr>
                             ) : codes.length === 0 ? (
                                 <tr>
-                                    <td colSpan="6" className={`p-8 text-center text-sm font-medium ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
+                                    <td colSpan="5" className={`p-8 text-center text-sm font-medium ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
                                         No codes found
                                     </td>
                                 </tr>
@@ -405,20 +404,6 @@ const StudentCodesManager = ({ theme }) => {
                                         </td>
                                         <td className={`p-4 text-xs tracking-wide ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
                                             {new Date(code.created_at).toLocaleDateString()}
-                                        </td>
-                                        <td className="p-4 text-right">
-                                            <button
-                                                onClick={() => toggleSelectCode(code.id)}
-                                                className={`p-2 rounded-lg transition-colors group ${theme === 'dark' ? 'hover:bg-cyan-500/10 text-slate-500 hover:text-cyan-400' : 'hover:bg-cyan-50 text-slate-400 hover:text-cyan-500'}`}
-                                                title="Select Code"
-                                            >
-                                                <input
-                                                    type="checkbox"
-                                                    className="dark-checkbox pointer-events-none"
-                                                    checked={selectedCodes.has(code.id)}
-                                                    readOnly
-                                                />
-                                            </button>
                                         </td>
                                     </motion.tr>
                                 ))

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Shield, Key, Search, Loader2, Trash2, CheckCircle, AlertCircle, Copy, Check, Upload } from 'lucide-react';
+import { Shield, Key, Search, Loader2, Trash2, CheckCircle, AlertCircle, Copy, Check, Upload, Wand2 } from 'lucide-react';
 import api from '../../services/api';
 import { useToast } from '../../contexts/ToastContext';
 
@@ -12,8 +12,40 @@ const StudentCodesManager = ({ theme }) => {
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [codesInput, setCodesInput] = useState('');
+    const [generateCount, setGenerateCount] = useState(10);
     const toast = useToast();
     const [copiedId, setCopiedId] = useState(null);
+
+    const handleAutoGenerate = () => {
+        let count = parseInt(generateCount, 10);
+        if (isNaN(count) || count <= 0) count = 10;
+        if (count > 500) count = 500; // Hard limit for safety
+
+        const generateRandomString = (length) => {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let result = '';
+            for (let i = 0; i < length; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        };
+
+        const newCodes = [];
+        for (let i = 0; i < count; i++) {
+            // e.g. CS-9X4B-L2M1
+            const code = `CS-${generateRandomString(4)}-${generateRandomString(4)}`;
+            newCodes.push(code);
+        }
+
+        const currentInput = codesInput.trim();
+        if (currentInput) {
+            setCodesInput(currentInput + ',\n' + newCodes.join(',\n'));
+        } else {
+            setCodesInput(newCodes.join(',\n'));
+        }
+        
+        toast.popup(`Auto-generated ${count} secure codes`);
+    };
 
     const fetchCodes = async () => {
         try {
@@ -116,6 +148,31 @@ const StudentCodesManager = ({ theme }) => {
                                 : 'bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400'
                                 }`}
                         />
+                        <div className="flex items-center gap-3 mt-3">
+                            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border focus-within:border-cyan-500 transition-colors ${theme === 'dark' ? 'bg-slate-900 border-white/10' : 'bg-white border-slate-200'}`}>
+                                <span className={`text-[10px] font-bold uppercase tracking-widest ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>Amount</span>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    max="500"
+                                    value={generateCount}
+                                    onChange={(e) => setGenerateCount(e.target.value)}
+                                    className={`w-16 bg-transparent outline-none text-sm font-bold text-center ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}
+                                />
+                            </div>
+                            <button
+                                onClick={handleAutoGenerate}
+                                className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all ${
+                                    theme === 'dark' 
+                                    ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20 hover:bg-purple-500 hover:text-white' 
+                                    : 'bg-purple-50 text-purple-600 border border-purple-200 hover:bg-purple-600 hover:text-white'
+                                }`}
+                                title="Auto-Generate Secure Codes"
+                            >
+                                <Wand2 className="w-3.5 h-3.5" />
+                                Auto-Gen
+                            </button>
+                        </div>
                     </div>
                     <button
                         onClick={handleUpload}

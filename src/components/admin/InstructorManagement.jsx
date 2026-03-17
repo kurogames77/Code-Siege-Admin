@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, CheckCircle, XCircle, MoreVertical, FileText, Mail, User, Calendar, Ban, Edit2, Shield, Trash2, Info, BookOpen, Layers, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { instructorAPI } from '../../services/api';
+import supabase from '../../lib/supabase';
 
 const InstructorManagement = ({ theme = 'dark' }) => {
     // Mock Data for Applications
@@ -26,21 +27,33 @@ const InstructorManagement = ({ theme = 'dark' }) => {
                 setApplications(appsResponse.applications);
             }
 
-            // Fetch users (instructors & students) - assuming we fetch a big chunk or all
             const response = await instructorAPI.getUsers(1, 1000);
             if (response.users) {
+                // Manually fetch handled_towers and enrolled_language since backend omit them or might return null
+                const instructorIds = response.users.filter(u => u.role === 'instructor' || u.role === 'admin').map(u => u.id);
+                let dbUsers = [];
+                try {
+                    const { data } = await supabase.from('users').select('id, enrolled_language, handled_towers').in('id', instructorIds);
+                    dbUsers = data || [];
+                } catch (err) {
+                    console.warn("Could not fetch extra instructor details from DB directly", err);
+                }
+
                 const filteredInstructors = response.users
                     .filter(u => u.role === 'instructor' || u.role === 'admin')
-                    .map(u => ({
-                        id: u.id,
-                        name: u.username,
-                        email: u.email,
-                        instructorId: u.student_id || 'N/A',
-                        languages: u.enrolled_language || '',
-                        towers: u.handled_towers || '',
-                        status: u.is_banned ? 'inactive' : 'active',
-                        avatar: u.avatar_url
-                    }));
+                    .map(u => {
+                        const dbUser = dbUsers.find(d => d.id === u.id);
+                        return {
+                            id: u.id,
+                            name: u.username,
+                            email: u.email,
+                            instructorId: u.student_id || 'N/A',
+                            languages: dbUser?.enrolled_language || u.enrolled_language || '',
+                            towers: dbUser?.handled_towers || u.handled_towers || '',
+                            status: u.is_banned ? 'inactive' : 'active',
+                            avatar: u.avatar_url
+                        };
+                    });
                 setInstructors(filteredInstructors);
             }
         } catch (error) {

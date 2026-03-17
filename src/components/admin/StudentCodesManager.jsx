@@ -134,10 +134,11 @@ const StudentCodesManager = ({ theme }) => {
                 setAutoGenProgress(i * 10);
             }
 
-            await api.instructor.uploadStudentCodes(generatedCodes);
-            toast.popup(`Successfully auto-generated ${numToGenerate} codes!`);
-            setPage(1);
-            fetchCodes();
+            // Instead of uploading directly to DB, populate the paste field
+            const newCodesString = generatedCodes.join('\n');
+            setCodesInput(prev => prev ? prev + '\n' + newCodesString : newCodesString);
+            toast.popup(`Auto-generated codes added to the input field! Click Upload to save.`);
+            
             setNumToGenerate(10); // reset
         } catch (error) {
             console.error('Auto-gen failed:', error);
@@ -407,11 +408,16 @@ const StudentCodesManager = ({ theme }) => {
                                         </td>
                                         <td className="p-4 text-right">
                                             <button
-                                                onClick={() => handleDelete(code.id)}
-                                                className={`p-2 rounded-lg transition-colors group ${theme === 'dark' ? 'hover:bg-red-500/10 text-slate-500 hover:text-red-400' : 'hover:bg-red-50 text-slate-400 hover:text-red-500'}`}
-                                                title="Delete Code"
+                                                onClick={() => toggleSelectCode(code.id)}
+                                                className={`p-2 rounded-lg transition-colors group ${theme === 'dark' ? 'hover:bg-cyan-500/10 text-slate-500 hover:text-cyan-400' : 'hover:bg-cyan-50 text-slate-400 hover:text-cyan-500'}`}
+                                                title="Select Code"
                                             >
-                                                <Trash2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                                                <input
+                                                    type="checkbox"
+                                                    className="dark-checkbox pointer-events-none"
+                                                    checked={selectedCodes.has(code.id)}
+                                                    readOnly
+                                                />
                                             </button>
                                         </td>
                                     </motion.tr>

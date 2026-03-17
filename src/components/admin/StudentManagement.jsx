@@ -1,4 +1,5 @@
-import { Search, User, Ban, Edit2, Trash2, Info, BookOpen, Trophy, Medal, Flag, Crosshair, Swords } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, User, Ban, Edit2, Trash2, Info, BookOpen } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { instructorAPI } from '../../services/api';
 
@@ -27,12 +28,7 @@ const StudentManagement = ({ theme = 'dark' }) => {
                         status: u.is_banned ? 'inactive' : 'active',
                         avatar: u.avatar_url,
                         level: u.level || 1,
-                        xp: u.xp || 0,
-                        achievements: u.achievements_count || 0,
-                        certificates: u.certificates_count || 0,
-                        towersCompleted: u.towers_completed || 0,
-                        battleWins: u.battle_wins || 0,
-                        totalBattles: u.total_battles || 0
+                        xp: u.xp || 0
                     }));
                 setStudents(filteredStudents);
             }
@@ -326,45 +322,12 @@ const StudentManagement = ({ theme = 'dark' }) => {
                                         </div>
                                     </div>
                                     
-                                        <div className={`p-4 rounded-xl border flex flex-col gap-3 ${theme === 'dark' ? 'bg-slate-900/50 border-white/5' : 'bg-slate-50 border-slate-200'}`}>
-                                            <div className="flex justify-between items-center">
-                                                <span className="text-sm font-bold text-slate-400">Student ID:</span>
-                                                <span className={`text-sm font-mono ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{editingStudent.studentId}</span>
-                                            </div>
+                                    <div className={`p-4 rounded-xl border flex flex-col gap-3 ${theme === 'dark' ? 'bg-slate-900/50 border-white/5' : 'bg-slate-50 border-slate-200'}`}>
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-sm font-bold text-slate-400">Student ID:</span>
+                                            <span className={`text-sm font-mono ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{editingStudent.studentId}</span>
                                         </div>
-
-                                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-                                            {/* Achievements */}
-                                            <div className={`p-4 rounded-xl border flex flex-col items-center justify-center gap-2 ${theme === 'dark' ? 'bg-slate-900/50 border-white/5' : 'bg-slate-50 border-slate-200'}`}>
-                                                <Trophy className="w-5 h-5 text-yellow-500" />
-                                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 text-center">Achievements</p>
-                                                <p className={`text-xl font-black ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{editingStudent.achievements}</p>
-                                            </div>
-                                            {/* Certificates */}
-                                            <div className={`p-4 rounded-xl border flex flex-col items-center justify-center gap-2 ${theme === 'dark' ? 'bg-slate-900/50 border-white/5' : 'bg-slate-50 border-slate-200'}`}>
-                                                <Medal className="w-5 h-5 text-emerald-500" />
-                                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 text-center">Certificates</p>
-                                                <p className={`text-xl font-black ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{editingStudent.certificates}</p>
-                                            </div>
-                                            {/* Towers */}
-                                            <div className={`p-4 rounded-xl border flex flex-col items-center justify-center gap-2 ${theme === 'dark' ? 'bg-slate-900/50 border-white/5' : 'bg-slate-50 border-slate-200'}`}>
-                                                <Flag className="w-5 h-5 text-blue-500" />
-                                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 text-center">Towers Completed</p>
-                                                <p className={`text-xl font-black ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{editingStudent.towersCompleted}</p>
-                                            </div>
-                                            {/* Battle Wins */}
-                                            <div className={`p-4 rounded-xl border flex flex-col items-center justify-center gap-2 ${theme === 'dark' ? 'bg-slate-900/50 border-white/5' : 'bg-slate-50 border-slate-200'}`}>
-                                                <Crosshair className="w-5 h-5 text-rose-500" />
-                                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 text-center">Battle Wins</p>
-                                                <p className={`text-xl font-black ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{editingStudent.battleWins}</p>
-                                            </div>
-                                            {/* Total Battles */}
-                                            <div className={`p-4 rounded-xl border flex flex-col items-center justify-center gap-2 ${theme === 'dark' ? 'bg-slate-900/50 border-white/5' : 'bg-slate-50 border-slate-200'}`}>
-                                                <Swords className="w-5 h-5 text-orange-500" />
-                                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 text-center">1v1 / Multi Battles</p>
-                                                <p className={`text-xl font-black ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{editingStudent.totalBattles}</p>
-                                            </div>
-                                        </div>
+                                    </div>
 
                                     <button
                                         onClick={() => setIsStudentModalOpen(false)}

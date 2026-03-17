@@ -4,6 +4,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { instructorAPI } from '../../services/api';
 import supabase from '../../lib/supabase';
 
+const GAME_TOWERS = [
+    { tower: 'Tower of Eldoria', language: 'Python' },
+    { tower: 'Tower of Tydorin', language: 'C#' },
+    { tower: 'Shadow Keep', language: 'C++' },
+    { tower: 'Tower of Prytody', language: 'JavaScript' },
+    { tower: 'Tower of Abyss', language: 'MySQL' },
+    { tower: 'Tower of Aeterd', language: 'PHP' },
+];
+
 const InstructorManagement = ({ theme = 'dark' }) => {
     // Mock Data for Applications
     const [applications, setApplications] = useState([]);
@@ -365,32 +374,40 @@ const InstructorManagement = ({ theme = 'dark' }) => {
                                                 });
                                             };
 
+                                            const takenTowers = new Set();
+                                            instructors.forEach(ins => {
+                                                if (ins.id === editingInstructor.id) return;
+                                                const insTowers = ins.towers ? ins.towers.split(',').map(t => t.trim().toLowerCase()) : [];
+                                                insTowers.forEach(t => takenTowers.add(t));
+                                            });
+
                                             return (
                                                 <>
                                                     {pairs.map((pair, idx) => (
                                                         <div key={idx} className="flex items-center gap-2">
-                                                            <input
-                                                                type="text"
-                                                                value={pair.tower}
+                                                            <select
+                                                                value={GAME_TOWERS.find(t => t.tower.toLowerCase() === (pair.tower || '').toLowerCase())?.tower || ''}
                                                                 onChange={(e) => {
                                                                     const newPairs = [...pairs];
-                                                                    newPairs[idx] = { ...newPairs[idx], tower: e.target.value };
+                                                                    const selectedTower = e.target.value;
+                                                                    const linkedLang = GAME_TOWERS.find(t => t.tower === selectedTower)?.language || '';
+                                                                    newPairs[idx] = { ...newPairs[idx], tower: selectedTower, language: linkedLang };
                                                                     updatePairs(newPairs);
                                                                 }}
-                                                                placeholder="Tower name..."
                                                                 className={`flex-1 border rounded-lg px-3 py-2 text-xs focus:border-cyan-500 outline-none transition-all ${theme === 'dark' ? 'bg-slate-950/50 border-white/5 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
-                                                            />
+                                                            >
+                                                                <option value="">Select Tower...</option>
+                                                                {GAME_TOWERS.filter(t => !takenTowers.has(t.tower.toLowerCase()) || t.tower.toLowerCase() === (pair.tower || '').toLowerCase()).map(t => (
+                                                                    <option key={t.tower} value={t.tower}>{t.tower}</option>
+                                                                ))}
+                                                            </select>
                                                             <span className="text-cyan-500 text-xs font-black">→</span>
                                                             <input
                                                                 type="text"
                                                                 value={pair.language}
-                                                                onChange={(e) => {
-                                                                    const newPairs = [...pairs];
-                                                                    newPairs[idx] = { ...newPairs[idx], language: e.target.value };
-                                                                    updatePairs(newPairs);
-                                                                }}
-                                                                placeholder="Language..."
-                                                                className={`flex-1 border rounded-lg px-3 py-2 text-xs focus:border-cyan-500 outline-none transition-all ${theme === 'dark' ? 'bg-slate-950/50 border-white/5 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                                                                readOnly
+                                                                placeholder="Language autofills..."
+                                                                className={`flex-1 border rounded-lg px-3 py-2 text-xs opacity-70 outline-none transition-all ${theme === 'dark' ? 'bg-slate-950/30 border-white/5 text-slate-400' : 'bg-slate-100 border-slate-200 text-slate-500'}`}
                                                             />
                                                             {pairs.length > 1 && (
                                                                 <button

@@ -130,18 +130,29 @@ const InstructorManagement = ({ theme = 'dark' }) => {
 
     // --- Instructor Handlers ---
     const handleUpdateInstructor = (instructor) => {
-        setEditingInstructor(instructor);
+        const t = instructor.towers ? instructor.towers.split(',').map(x => x.trim()).filter(x => x) : [];
+        const l = instructor.languages ? instructor.languages.split(',').map(x => x.trim()).filter(x => x) : [];
+        const pairs = t.map((tower, i) => ({ tower, language: l[i] || '' }));
+        if (pairs.length === 0) pairs.push({ tower: '', language: '' });
+
+        setEditingInstructor({
+            ...instructor,
+            pairs
+        });
         setIsEditModalOpen(true);
     };
 
     const handleSaveInstructorUpdate = async (e) => {
         e.preventDefault();
         try {
+            const finalTowers = editingInstructor.pairs.map(p => p.tower.trim()).filter(t => t).join(', ');
+            const finalLanguages = editingInstructor.pairs.map(p => p.language.trim()).filter(l => l).join(', ');
+
             await instructorAPI.updateUser(editingInstructor.id, {
                 username: editingInstructor.name,
                 student_id: editingInstructor.instructorId,
-                enrolled_language: editingInstructor.languages,
-                handled_towers: editingInstructor.towers
+                enrolled_language: finalLanguages,
+                handled_towers: finalTowers
             });
             setIsEditModalOpen(false);
             fetchUsers(); 
@@ -346,17 +357,11 @@ const InstructorManagement = ({ theme = 'dark' }) => {
                                     <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 ml-1">Towers & Languages Handled</label>
                                     <div className="space-y-2">
                                         {(() => {
-                                            const towers = editingInstructor.towers ? editingInstructor.towers.split(',').map(t => t.trim()).filter(t => t) : [];
-                                            const languages = editingInstructor.languages ? editingInstructor.languages.split(',').map(l => l.trim()).filter(l => l) : [];
-                                            const pairs = towers.map((t, i) => ({ tower: t, language: languages[i] || '' }));
-                                            // Ensure at least one empty row if no pairs exist
-                                            if (pairs.length === 0) pairs.push({ tower: '', language: '' });
-                                            
+                                            const pairs = editingInstructor.pairs || [];
                                             const updatePairs = (newPairs) => {
                                                 setEditingInstructor({
                                                     ...editingInstructor,
-                                                    towers: newPairs.map(p => p.tower).filter(t => t).join(', '),
-                                                    languages: newPairs.map(p => p.language).filter(l => l).join(', ')
+                                                    pairs: newPairs
                                                 });
                                             };
 

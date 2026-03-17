@@ -116,6 +116,13 @@ export const instructorAPI = {
         });
     },
 
+    bulkDeleteStudentCodes: async (codeIds) => {
+        return apiRequest('/instructor/student-codes/bulk-delete', {
+            method: 'POST',
+            body: JSON.stringify({ codeIds }),
+        });
+    },
+
     // Application Management
     getApplications: async (status = 'pending') => {
         return apiRequest(`/instructor/applications?status=${status}`);

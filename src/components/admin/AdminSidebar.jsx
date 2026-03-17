@@ -9,12 +9,15 @@ const AdminSidebar = ({ activeTab, setActiveTab, theme = 'dark' }) => {
     const navigate = useNavigate();
     const { logout } = useUser();
     const [showExitConfirm, setShowExitConfirm] = useState(false);
+    const [isExiting, setIsExiting] = useState(false);
 
     const handleExit = async () => {
+        setIsExiting(true);
         // Await logout to ensure backend clears last_active_at
         // (UI state clears instantly inside logout(), so no visual delay)
         await logout();
         navigate('/', { replace: true, state: { loggedOut: true } });
+        setIsExiting(false);
     };
 
     const menuItems = [
@@ -106,9 +109,11 @@ const AdminSidebar = ({ activeTab, setActiveTab, theme = 'dark' }) => {
                                 </button>
                                 <button
                                     onClick={handleExit}
-                                    className="flex-1 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-bold text-xs uppercase tracking-widest shadow-lg shadow-cyan-500/20 transition-all hover:scale-105"
+                                    disabled={isExiting}
+                                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-bold text-xs uppercase tracking-widest shadow-lg shadow-cyan-500/20 transition-all ${isExiting ? 'opacity-70 cursor-not-allowed' : 'hover:scale-105'}`}
                                 >
-                                    Confirm Exit
+                                    {isExiting ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : null}
+                                    {isExiting ? 'Exiting...' : 'Confirm Exit'}
                                 </button>
                             </div>
                         </motion.div>

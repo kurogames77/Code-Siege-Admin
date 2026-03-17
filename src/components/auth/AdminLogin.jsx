@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Shield, Lock, Loader2, AlertCircle, Eye, EyeOff, Terminal } from 'lucide-react';
 import { authAPI } from '../../services/api';
 import { useUser } from '../../contexts/UserContext';
@@ -14,7 +14,15 @@ const AdminLogin = () => {
     const [error, setError] = useState('');
     const { checkAuth } = useUser();
     const navigate = useNavigate();
+    const location = useLocation();
     const toast = useToast();
+
+    useEffect(() => {
+        if (location.state?.loggedOut) {
+            toast.popup('Admin logged out successfully', 'success');
+            navigate('.', { replace: true, state: {} });
+        }
+    }, [location.state, navigate, toast]);
 
     const handleLogin = async (e) => {
         e.preventDefault();

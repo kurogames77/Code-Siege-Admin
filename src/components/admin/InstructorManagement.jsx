@@ -388,11 +388,11 @@ const InstructorManagement = ({ theme = 'dark' }) => {
                                                             key={course.id}
                                                             className={`flex items-center gap-3 p-2.5 rounded-lg border transition-all ${theme === 'dark' ? 'bg-slate-900/50 border-white/5' : 'bg-white border-slate-200'}`}
                                                         >
-                                                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center border overflow-hidden bg-slate-900/50 ${courseColorMap[course.color] || courseColorMap.cyan}`}>
+                                                            <div className="w-10 h-10 shrink-0 flex items-center justify-center overflow-visible">
                                                                 {towerInfoMap[course.id] ? (
-                                                                    <img src={towerInfoMap[course.id].image} alt={towerInfoMap[course.id].name} className="w-full h-full object-cover" />
+                                                                    <img src={towerInfoMap[course.id].image} alt={towerInfoMap[course.id].name} className="w-full h-full object-contain scale-[1.35] drop-shadow-md" />
                                                                 ) : (
-                                                                    <Code2 className="w-4 h-4" />
+                                                                    <Code2 className="w-5 h-5 text-cyan-500" />
                                                                 )}
                                                             </div>
                                                             <div className="flex-1">

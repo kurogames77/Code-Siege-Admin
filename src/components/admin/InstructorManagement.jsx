@@ -174,6 +174,15 @@ const InstructorManagement = ({ theme = 'dark' }) => {
         cyan: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
     };
 
+    const towerInfoMap = {
+        'py': { name: 'Eldoria', image: '/towers/tower11.png' },
+        'js': { name: 'Tydorin', image: '/towers/tower22.png' },
+        'cpp': { name: 'Shadow', image: '/towers/tower33.png' },
+        'java': { name: 'Prytody', image: '/towers/tower44.png' },
+        'cs': { name: 'Aeterd', image: '/towers/tower55.png' },
+        'html': { name: 'Abyss', image: '/towers/tower66.png' }
+    };
+
     return (
         <div className="flex flex-col h-full gap-8 overflow-y-auto overflow-x-hidden custom-scrollbar pb-10 pr-2">
             <style>{scrollbarStyles}</style>
@@ -233,13 +242,14 @@ const InstructorManagement = ({ theme = 'dark' }) => {
                                                 {/* Tower/Language badges */}
                                                 <div className="flex flex-wrap gap-1.5 mt-1.5">
                                                     {getInstructorCourses(instructor.id).map(course => (
-                                                        <span
-                                                            key={course.id}
-                                                            className={`text-[9px] uppercase px-2 py-0.5 rounded-md border font-bold flex items-center gap-1 ${courseColorMap[course.color] || courseColorMap.cyan}`}
-                                                        >
-                                                            <Code2 className="w-2.5 h-2.5" />
-                                                            {course.id} → {course.name}
-                                                        </span>
+                                                            <div className={`text-[9px] uppercase px-2 py-0.5 rounded-md border font-bold flex items-center gap-1.5 ${courseColorMap[course.color] || courseColorMap.cyan}`}>
+                                                                {towerInfoMap[course.id] ? (
+                                                                    <img src={towerInfoMap[course.id].image} alt={towerInfoMap[course.id].name} className="w-3 h-3 rounded-sm object-cover" />
+                                                                ) : (
+                                                                    <Code2 className="w-2.5 h-2.5" />
+                                                                )}
+                                                                <span>{towerInfoMap[course.id]?.name || course.id} → {course.name}</span>
+                                                            </div>
                                                     ))}
                                                 </div>
                                             </div>
@@ -339,13 +349,17 @@ const InstructorManagement = ({ theme = 'dark' }) => {
                                                             key={course.id}
                                                             className={`flex items-center gap-3 p-2.5 rounded-lg border transition-all ${theme === 'dark' ? 'bg-slate-900/50 border-white/5' : 'bg-white border-slate-200'}`}
                                                         >
-                                                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center border ${courseColorMap[course.color] || courseColorMap.cyan}`}>
-                                                                <Code2 className="w-4 h-4" />
+                                                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center border overflow-hidden bg-slate-900/50 ${courseColorMap[course.color] || courseColorMap.cyan}`}>
+                                                                {towerInfoMap[course.id] ? (
+                                                                    <img src={towerInfoMap[course.id].image} alt={towerInfoMap[course.id].name} className="w-full h-full object-cover" />
+                                                                ) : (
+                                                                    <Code2 className="w-4 h-4" />
+                                                                )}
                                                             </div>
                                                             <div className="flex-1">
                                                                 <div className="flex items-center gap-2">
                                                                     <span className={`text-xs font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-                                                                        {course.id}
+                                                                        {towerInfoMap[course.id]?.name || course.id}
                                                                     </span>
                                                                     <span className="text-cyan-500 text-xs font-black">→</span>
                                                                     <span className={`text-xs font-semibold ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>
@@ -354,7 +368,7 @@ const InstructorManagement = ({ theme = 'dark' }) => {
                                                                 </div>
                                                             </div>
                                                             <span className={`text-[9px] uppercase px-2 py-0.5 rounded-md border font-bold ${courseColorMap[course.color] || courseColorMap.cyan}`}>
-                                                                {course.color || 'default'}
+                                                                ACTIVE
                                                             </span>
                                                         </div>
                                                     ))}

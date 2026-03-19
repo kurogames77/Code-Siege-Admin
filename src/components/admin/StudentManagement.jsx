@@ -15,6 +15,24 @@ const StudentManagement = ({ theme = 'dark' }) => {
     const [studentModalMode, setStudentModalMode] = useState('info'); // 'info' or 'edit'
     const [loadingProfile, setLoadingProfile] = useState(false);
 
+    // Confirmation Modal State
+    const [confirmDialog, setConfirmDialog] = useState({
+        isOpen: false,
+        title: '',
+        message: '',
+        actionLabel: 'Confirm',
+        onConfirm: null,
+        type: 'danger'
+    });
+
+    const openConfirm = (title, message, actionLabel, onConfirm, type = 'danger') => {
+        setConfirmDialog({ isOpen: true, title, message, actionLabel, onConfirm, type });
+    };
+
+    const closeConfirm = () => {
+        setConfirmDialog(prev => ({ ...prev, isOpen: false }));
+    };
+
     const fetchStudents = async () => {
         setIsLoading(true);
         try {
@@ -57,27 +75,41 @@ const StudentManagement = ({ theme = 'dark' }) => {
         const isBanned = currentStatus === 'active';
         const action = isBanned ? 'deactivate' : 'reactivate';
 
-        if (window.confirm(`Are you sure you want to ${action} this student account?`)) {
-            try {
-                await instructorAPI.banUser(id, isBanned);
-                fetchStudents(); // Refresh list
-            } catch (error) {
-                console.error('Failed to update ban status:', error);
-                alert('Failed to update account status');
-            }
-        }
+        openConfirm(
+            `${isBanned ? 'Deactivate' : 'Reactivate'} Student Account`,
+            `Are you sure you want to ${action} this student account? They will ${isBanned ? 'lose' : 'regain'} access to the platform.`,
+            isBanned ? 'Deactivate' : 'Reactivate',
+            async () => {
+                try {
+                    await instructorAPI.banUser(id, isBanned);
+                    fetchStudents(); // Refresh list
+                    closeConfirm();
+                } catch (error) {
+                    console.error('Failed to update ban status:', error);
+                    alert('Failed to update account status');
+                }
+            },
+            isBanned ? 'danger' : 'warning'
+        );
     };
 
     const handleDeleteUser = async (id) => {
-        if (window.confirm(`Are you sure you want to PERMANENTLY delete this student account? This cannot be undone.`)) {
-            try {
-                await instructorAPI.deleteUser(id);
-                fetchStudents(); // Refresh list
-            } catch (error) {
-                console.error('Failed to delete user:', error);
-                alert(`Failed to delete student account`);
-            }
-        }
+        openConfirm(
+            'Delete Student Account',
+            'Are you sure you want to PERMANENTLY delete this student account? This cannot be undone.',
+            'Delete',
+            async () => {
+                try {
+                    await instructorAPI.deleteUser(id);
+                    fetchStudents(); // Refresh list
+                    closeConfirm();
+                } catch (error) {
+                    console.error('Failed to delete user:', error);
+                    alert(`Failed to delete student account`);
+                }
+            },
+            'danger'
+        );
     };
 
     const handleOpenStudentModal = async (student, mode) => {
@@ -439,6 +471,66 @@ const StudentManagement = ({ theme = 'dark' }) => {
                                     </button>
                                 </div>
                             )}
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Custom Confirmation Modal */}
+            <AnimatePresence>
+                {confirmDialog.isOpen && (
+                    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm"
+                            onClick={closeConfirm}
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className={`relative w-full max-w-sm rounded-3xl border p-6 shadow-2xl ${theme === 'dark' ? 'bg-[#0B1224] border-white/10' : 'bg-white border-slate-200'}`}
+                        >
+                            <div className="flex flex-col items-center text-center">
+                                <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${
+                                    confirmDialog.type === 'danger' 
+                                        ? (theme === 'dark' ? 'bg-rose-500/10 text-rose-500' : 'bg-rose-100 text-rose-600')
+                                        : (theme === 'dark' ? 'bg-amber-500/10 text-amber-500' : 'bg-amber-100 text-amber-600')
+                                    }`}
+                                >
+                                    <Ban className="w-8 h-8" />
+                                </div>
+                                <h3 className={`text-xl font-black uppercase tracking-tight mb-2 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                                    {confirmDialog.title}
+                                </h3>
+                                <p className={`text-sm mb-6 ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
+                                    {confirmDialog.message}
+                                </p>
+                                <div className="flex gap-3 w-full">
+                                    <button
+                                        onClick={closeConfirm}
+                                        className={`flex-1 py-3 rounded-xl border text-xs font-bold uppercase tracking-widest transition-all ${
+                                            theme === 'dark' 
+                                            ? 'border-white/5 text-slate-400 hover:bg-white/5' 
+                                            : 'border-slate-200 text-slate-500 hover:bg-slate-50'
+                                        }`}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={confirmDialog.onConfirm}
+                                        className={`flex-1 py-3 rounded-xl border text-xs font-bold uppercase tracking-widest transition-all ${
+                                            confirmDialog.type === 'danger'
+                                            ? 'bg-rose-500/20 border-rose-500/30 text-rose-400 hover:bg-rose-500 hover:text-white'
+                                            : 'bg-amber-500/20 border-amber-500/30 text-amber-400 hover:bg-amber-500 hover:text-white'
+                                        }`}
+                                    >
+                                        {confirmDialog.actionLabel}
+                                    </button>
+                                </div>
+                            </div>
                         </motion.div>
                     </div>
                 )}

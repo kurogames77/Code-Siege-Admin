@@ -215,7 +215,7 @@ const StudentCodesManager = ({ theme }) => {
             {/* Main Actions Container — paste/upload/search + auto-gen + mass select */}
             <div className={`p-6 rounded-2xl border flex flex-col gap-5 transition-colors ${theme === 'dark' ? 'bg-[#0B1224] border-cyan-500/20' : 'bg-white border-slate-200'}`}>
                 {/* Row 1: Paste code + Upload + Search */}
-                <div className="flex flex-wrap items-center gap-4 w-full">
+                <div className="flex flex-wrap items-start gap-4 w-full">
                     <div className="flex-1 min-w-[250px] flex items-start gap-2">
                         <textarea
                             value={codesInput}
@@ -244,7 +244,7 @@ const StudentCodesManager = ({ theme }) => {
                                 placeholder="SEARCH CODES..."
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                className={`w-full pl-9 pr-3 py-2.5 rounded-xl border transition-colors outline-none focus:border-cyan-500 font-mono text-sm tracking-wider ${theme === 'dark'
+                                className={`w-full pl-9 pr-3 h-[46px] rounded-xl border transition-colors outline-none focus:border-cyan-500 font-mono text-sm tracking-wider ${theme === 'dark'
                                     ? 'bg-slate-950/50 border-white/5 text-white placeholder-slate-600'
                                     : 'bg-white border-slate-200 text-slate-900 placeholder-slate-400'
                                     }`}

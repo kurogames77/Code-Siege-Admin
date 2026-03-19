@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Shield, Key, Search, Loader2, Trash2, CheckCircle, AlertCircle, Copy, Check, Upload } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Shield, Key, Search, Loader2, Trash2, CheckCircle, AlertCircle, Copy, Check, Upload, Ban } from 'lucide-react';
 import api from '../../services/api';
 import { useToast } from '../../contexts/ToastContext';
 
@@ -19,6 +19,24 @@ const StudentCodesManager = ({ theme }) => {
     const [autoGenProgress, setAutoGenProgress] = useState(0);
     const [numToGenerate, setNumToGenerate] = useState(10);
     const [codePrefix, setCodePrefix] = useState('IT');
+
+    // Confirmation Modal State
+    const [confirmDialog, setConfirmDialog] = useState({
+        isOpen: false,
+        title: '',
+        message: '',
+        actionLabel: 'Confirm',
+        onConfirm: null,
+        type: 'danger'
+    });
+
+    const openConfirm = (title, message, actionLabel, onConfirm, type = 'danger') => {
+        setConfirmDialog({ isOpen: true, title, message, actionLabel, onConfirm, type });
+    };
+
+    const closeConfirm = () => {
+        setConfirmDialog(prev => ({ ...prev, isOpen: false }));
+    };
 
     const CODE_PREFIXES = ['IT', 'CS', 'IS'];
 
@@ -74,33 +92,48 @@ const StudentCodesManager = ({ theme }) => {
     };
 
     const handleDelete = async (id) => {
-        if (!window.confirm('Are you sure you want to delete this code?')) return;
-
-        try {
-            await api.instructor.deleteStudentCode(id);
-            toast.popup('Code deleted');
-            fetchCodes();
-        } catch (error) {
-            console.error('Failed to delete code:', error);
-            toast.popup('Failed to delete code', 'error');
-        }
+        openConfirm(
+            'Delete Code',
+            'Are you sure you want to delete this code? This cannot be undone.',
+            'Delete',
+            async () => {
+                try {
+                    await api.instructor.deleteStudentCode(id);
+                    toast.popup('Code deleted');
+                    fetchCodes();
+                    closeConfirm();
+                } catch (error) {
+                    console.error('Failed to delete code:', error);
+                    toast.popup('Failed to delete code', 'error');
+                }
+            },
+            'danger'
+        );
     };
 
     const handleBulkDelete = async () => {
         if (selectedCodes.size === 0) return;
-        if (!window.confirm(`Are you sure you want to delete ${selectedCodes.size} selected codes?`)) return;
-
-        try {
-            setLoading(true);
-            await api.instructor.bulkDeleteStudentCodes(Array.from(selectedCodes));
-            toast.popup(`Deleted ${selectedCodes.size} codes`);
-            setSelectedCodes(new Set());
-            fetchCodes();
-        } catch (error) {
-            console.error('Failed to bulk delete:', error);
-            toast.popup('Failed to delete selected codes', 'error');
-            setLoading(false);
-        }
+        
+        openConfirm(
+            'Delete Selected Codes',
+            `Are you sure you want to delete ${selectedCodes.size} selected codes? This cannot be undone.`,
+            'Bulk Delete',
+            async () => {
+                try {
+                    setLoading(true);
+                    await api.instructor.bulkDeleteStudentCodes(Array.from(selectedCodes));
+                    toast.popup(`Deleted ${selectedCodes.size} codes`);
+                    setSelectedCodes(new Set());
+                    fetchCodes();
+                    closeConfirm();
+                } catch (error) {
+                    console.error('Failed to bulk delete:', error);
+                    toast.popup('Failed to delete selected codes', 'error');
+                    setLoading(false);
+                }
+            },
+            'danger'
+        );
     };
 
     const handleAutoGen = async () => {
@@ -441,6 +474,66 @@ const StudentCodesManager = ({ theme }) => {
                     </div>
                 )}
             </div>
+
+            {/* Custom Confirmation Modal */}
+            <AnimatePresence>
+                {confirmDialog.isOpen && (
+                    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm"
+                            onClick={closeConfirm}
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className={`relative w-full max-w-sm rounded-[2rem] border p-6 shadow-xl ${theme === 'dark' ? 'bg-[#0B1224] border-white/10' : 'bg-white border-slate-200'}`}
+                        >
+                            <div className="flex flex-col items-center text-center">
+                                <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${
+                                    confirmDialog.type === 'danger' 
+                                        ? (theme === 'dark' ? 'bg-rose-500/10 text-rose-500' : 'bg-rose-100 text-rose-600')
+                                        : (theme === 'dark' ? 'bg-amber-500/10 text-amber-500' : 'bg-amber-100 text-amber-600')
+                                    }`}
+                                >
+                                    <Trash2 className="w-8 h-8" />
+                                </div>
+                                <h3 className={`text-xl font-black uppercase tracking-tight mb-2 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                                    {confirmDialog.title}
+                                </h3>
+                                <p className={`text-sm mb-6 ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
+                                    {confirmDialog.message}
+                                </p>
+                                <div className="flex gap-3 w-full">
+                                    <button
+                                        onClick={closeConfirm}
+                                        className={`flex-1 py-3 rounded-xl border text-xs font-bold uppercase tracking-widest transition-all ${
+                                            theme === 'dark' 
+                                            ? 'border-white/5 text-slate-400 hover:bg-white/5' 
+                                            : 'border-slate-200 text-slate-500 hover:bg-slate-50'
+                                        }`}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={confirmDialog.onConfirm}
+                                        className={`flex-1 py-3 rounded-xl border text-xs font-bold uppercase tracking-widest transition-all ${
+                                            confirmDialog.type === 'danger'
+                                            ? 'bg-rose-500/20 border-rose-500/30 text-rose-400 hover:bg-rose-500 hover:text-white'
+                                            : 'bg-amber-500/20 border-amber-500/30 text-amber-400 hover:bg-amber-500 hover:text-white'
+                                        }`}
+                                    >
+                                        {confirmDialog.actionLabel}
+                                    </button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

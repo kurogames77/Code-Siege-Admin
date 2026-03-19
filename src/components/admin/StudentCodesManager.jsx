@@ -20,7 +20,7 @@ const StudentCodesManager = ({ theme }) => {
     const [numToGenerate, setNumToGenerate] = useState(10);
     const [codePrefix, setCodePrefix] = useState('IT');
 
-    const CODE_PREFIXES = ['IT', 'CS', 'IS', 'CS-IS-IT'];
+    const CODE_PREFIXES = ['IT', 'CS', 'IS'];
 
     const fetchCodes = async () => {
         try {
@@ -216,21 +216,21 @@ const StudentCodesManager = ({ theme }) => {
             <div className={`p-6 rounded-2xl border flex flex-col gap-5 transition-colors ${theme === 'dark' ? 'bg-[#0B1224] border-cyan-500/20' : 'bg-white border-slate-200'}`}>
                 {/* Row 1: Paste code + Upload + Search */}
                 <div className="flex flex-wrap items-center gap-4 w-full">
-                    <div className="flex-1 min-w-[250px] flex items-center gap-2">
-                        <input
-                            type="text"
+                    <div className="flex-1 min-w-[250px] flex items-stretch gap-2">
+                        <textarea
                             value={codesInput}
                             onChange={(e) => setCodesInput(e.target.value)}
-                            placeholder="Paste codes here (comma/space separated)..."
-                            className={`w-full p-2.5 rounded-xl border transition-colors outline-none focus:border-cyan-500 font-mono text-sm ${theme === 'dark'
+                            placeholder="Paste codes here (comma/space/newline separated)..."
+                            className={`w-full p-3 rounded-xl border transition-colors outline-none focus:border-cyan-500 font-mono text-sm resize-y custom-dark-scrollbar min-h-[42px] max-h-[200px] ${theme === 'dark'
                                 ? 'bg-slate-950/50 border-white/5 text-white placeholder-slate-600'
                                 : 'bg-white border-slate-200 text-slate-900 placeholder-slate-400'
                                 }`}
+                            rows={codesInput.split('\n').length > 1 ? Math.min(6, codesInput.split('\n').length) : 1}
                         />
                         <button
                             onClick={handleUpload}
                             disabled={generating || !codesInput.trim()}
-                            className="shrink-0 px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-bold text-sm uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 h-[42px]"
+                            className="shrink-0 px-5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-bold text-sm uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 h-auto py-2"
                         >
                             {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                             Upload

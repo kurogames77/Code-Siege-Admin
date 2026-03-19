@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Search, User, Ban, Edit2, Trash2, Info, BookOpen, Trophy, Swords, Award, Gem, Shield, Star } from 'lucide-react';
+import { Search, User, Ban, Edit2, Trash2, Info, BookOpen, Trophy, Swords, Award, Gem, Shield, Star, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { instructorAPI } from '../../services/api';
+import supabase from '../../lib/supabase';
 
 const StudentManagement = ({ theme = 'dark' }) => {
     const [students, setStudents] = useState([]);
@@ -12,6 +13,7 @@ const StudentManagement = ({ theme = 'dark' }) => {
     const [isStudentModalOpen, setIsStudentModalOpen] = useState(false);
     const [editingStudent, setEditingStudent] = useState(null);
     const [studentModalMode, setStudentModalMode] = useState('info'); // 'info' or 'edit'
+    const [loadingProfile, setLoadingProfile] = useState(false);
 
     const fetchStudents = async () => {
         setIsLoading(true);
@@ -78,10 +80,51 @@ const StudentManagement = ({ theme = 'dark' }) => {
         }
     };
 
-    const handleOpenStudentModal = (student, mode) => {
-        setEditingStudent(student);
+    const handleOpenStudentModal = async (student, mode) => {
         setStudentModalMode(mode);
         setIsStudentModalOpen(true);
+
+        if (mode === 'info') {
+            // Fetch full profile from Supabase for accurate stats
+            setLoadingProfile(true);
+            setEditingStudent(student); // show what we have initially
+            try {
+                const { data, error } = await supabase
+                    .from('users')
+                    .select('*')
+                    .eq('id', student.id)
+                    .single();
+
+                if (!error && data) {
+                    // Count completed towers from tower_progress
+                    const towerProgress = data.tower_progress || {};
+                    const towersCompleted = Object.values(towerProgress).filter(v => v > 0).length;
+
+                    setEditingStudent({
+                        ...student,
+                        level: data.level || 1,
+                        xp: data.xp || 0,
+                        gems: data.gems || 0,
+                        rankName: data.rank_name || 'Siege Novice',
+                        achievements: data.achievements_count || data.achievements || 0,
+                        certificates: data.certificates_count || data.certificates || 0,
+                        towersCompleted: towersCompleted,
+                        battleWins: data.battle_wins || 0,
+                        battleLosses: data.battle_losses || 0,
+                        totalBattles: (data.battle_wins || 0) + (data.battle_losses || 0),
+                        course: data.course || '',
+                        college: data.college || '',
+                        school: data.school || ''
+                    });
+                }
+            } catch (err) {
+                console.error('Failed to fetch student profile:', err);
+            } finally {
+                setLoadingProfile(false);
+            }
+        } else {
+            setEditingStudent(student);
+        }
     };
 
     const handleSaveStudentUpdate = async (e) => {

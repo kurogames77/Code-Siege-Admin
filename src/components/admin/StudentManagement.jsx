@@ -48,7 +48,7 @@ const StudentManagement = ({ theme = 'dark' }) => {
                         studentId: u.student_id || 'N/A',
                         status: u.is_banned ? 'inactive' : 'active',
                         avatar: u.avatar_url,
-                        level: getRankFromExp(u.xp || u.exp || 0).id,
+                        level: u.level || Math.floor((u.xp || u.exp || 0) / 100) + 1,
                         xp: u.xp || u.exp || 0,
                         gems: u.gems || 0,
                         rankName: getRankFromExp(u.xp || u.exp || 0).name,

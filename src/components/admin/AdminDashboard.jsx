@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Activity, Server, Users, FileText, Activity as ActivityIcon, TrendingUp, MousePointer2 } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { instructorAPI } from '../../services/api';
+import supabase from '../../lib/supabase';
 
 const AdminDashboard = ({ theme = 'dark' }) => {
     const [currentTime, setCurrentTime] = React.useState(new Date());
@@ -18,6 +19,7 @@ const AdminDashboard = ({ theme = 'dark' }) => {
         { label: 'Total Students', value: '0', status: 'Total', icon: Users, color: 'text-cyan-500', bg: 'bg-cyan-500' },
         { label: 'Total Instructors', value: '0', status: 'Total', icon: Server, color: 'text-purple-500', bg: 'bg-purple-500' },
         { label: 'Total Applicants', value: '0', status: 'Total', icon: FileText, color: 'text-amber-500', bg: 'bg-amber-500' },
+        { label: 'Total Guests', value: '0', status: 'Total', icon: User, color: 'text-indigo-500', bg: 'bg-indigo-500' },
     ]);
     const [instructorActivity, setInstructorActivity] = useState([
         { month: 'Jan', active: 1 }, { month: 'Feb', active: 0 },
@@ -48,11 +50,20 @@ const AdminDashboard = ({ theme = 'dark' }) => {
 
         const fetchStats = async () => {
             try {
+                // Fetch stats from backend API
                 const data = await instructorAPI.getStats();
+                
+                // Fetch guest count directly from Supabase to avoid backend changes
+                const { count: guestCount } = await supabase
+                    .from('users')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('role', 'guest');
+
                 setStats([
                     { label: 'Total Students', value: data.totalStudents.toString(), status: 'Total', icon: Users, color: 'text-cyan-500', bg: 'bg-cyan-500' },
                     { label: 'Total Instructors', value: data.totalInstructors.toString(), status: 'Total', icon: Server, color: 'text-purple-500', bg: 'bg-purple-500' },
                     { label: 'Total Applicants', value: (data.totalApplications || 0).toString(), status: 'Total', icon: FileText, color: 'text-amber-500', bg: 'bg-amber-500' },
+                    { label: 'Total Guests', value: (guestCount || 0).toString(), status: 'Total', icon: User, color: 'text-indigo-500', bg: 'bg-indigo-500' },
                 ]);
 
                 if (data.instructorActivity) {

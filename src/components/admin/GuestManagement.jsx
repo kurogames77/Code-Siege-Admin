@@ -190,14 +190,14 @@ const GuestManagement = ({ theme = 'dark' }) => {
 
             {/* Main Table */}
             {!loading && (
-                <div className={`border rounded-xl overflow-hidden shadow-sm ${theme === 'dark' ? 'bg-[#0B1224] border-cyan-500/20' : 'bg-white border-slate-200'}`}>
+                <div className={`border rounded-xl shadow-sm ${theme === 'dark' ? 'bg-[#0B1224] border-cyan-500/20' : 'bg-white border-slate-200'}`}>
                     <style>{`
                         .guest-table-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
                         .guest-table-scroll::-webkit-scrollbar-track { background: ${theme === 'dark' ? '#0B1224' : '#f1f5f9'}; border-radius: 8px; }
                         .guest-table-scroll::-webkit-scrollbar-thumb { background: ${theme === 'dark' ? '#1e293b' : '#cbd5e1'}; border-radius: 8px; }
                         .guest-table-scroll::-webkit-scrollbar-thumb:hover { background: ${theme === 'dark' ? '#334155' : '#94a3b8'}; }
                     `}</style>
-                    <div className="overflow-x-auto guest-table-scroll">
+                    <div className="guest-table-scroll">
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className={`border-b text-[10px] uppercase tracking-widest font-bold ${theme === 'dark' ? 'bg-cyan-950/20 border-cyan-500/20 text-cyan-500' : 'bg-slate-50 border-slate-200 text-slate-500'}`}>
@@ -290,7 +290,7 @@ const GuestManagement = ({ theme = 'dark' }) => {
                                                 </td>
 
                                                 {/* Actions */}
-                                                <td className="p-4 text-center relative">
+                                                <td className="p-4 text-center relative z-40">
                                                     <button
                                                         onClick={() => setActionMenu(actionMenu === guest.id ? null : guest.id)}
                                                         className={`p-2 rounded-lg transition-colors ${

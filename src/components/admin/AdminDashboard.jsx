@@ -108,11 +108,11 @@ const AdminDashboard = ({ theme = 'dark' }) => {
             </div>
 
             {/* Stats Grid */}
-            <div className="flex flex-wrap gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
                 {stats.map((stat, idx) => {
                     const Icon = stat.icon;
                     return (
-                        <div key={idx} className={`border p-8 rounded-3xl backdrop-blur-sm relative overflow-hidden group transition-all duration-500 min-w-[280px] flex-1 ${theme === 'dark' ? 'bg-[#0B1224]/40 border-white/5 hover:border-cyan-500/30' : 'bg-white border-slate-200 shadow-sm hover:border-cyan-500/50'}`}>
+                        <div key={idx} className={`border p-6 rounded-3xl backdrop-blur-sm relative overflow-hidden group transition-all duration-500 ${theme === 'dark' ? 'bg-[#0B1224]/40 border-white/5 hover:border-cyan-500/30' : 'bg-white border-slate-200 shadow-sm hover:border-cyan-500/50'}`}>
                             <div className="flex justify-between items-start mb-6">
                                 <div className={`p-4 rounded-xl transition-colors duration-500 ${theme === 'dark' ? 'bg-white/5 shadow-inner' : 'bg-slate-50 border border-slate-100'} ${stat.color}`}>
                                     <Icon className="w-7 h-7" />

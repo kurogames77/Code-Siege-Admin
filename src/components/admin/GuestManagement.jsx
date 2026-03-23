@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, MoreVertical, Trash2, User, Calendar, Clock, Activity, Ban, AlertTriangle, X, Eye } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import supabase from '../../lib/supabase';
+import { getRankFromExp } from '../../lib/rankSystem';
 
 const GuestManagement = ({ theme = 'dark' }) => {
     const [guests, setGuests] = useState([]);
@@ -262,7 +263,7 @@ const GuestManagement = ({ theme = 'dark' }) => {
                                                 <td className="p-4">
                                                     <div className="flex items-center justify-center gap-5">
                                                         <div className="flex flex-col items-center">
-                                                            <div className={`font-black text-sm ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{guest.level || 1}</div>
+                                                            <div className={`font-black text-sm ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{getRankFromExp(guest.xp || guest.exp || 0).id}</div>
                                                             <div className={`text-[9px] uppercase tracking-widest font-bold ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>Level</div>
                                                         </div>
                                                         <div className="flex flex-col items-center">
@@ -437,7 +438,7 @@ const GuestManagement = ({ theme = 'dark' }) => {
                                     { label: 'Username', value: detailGuest.username || 'N/A' },
                                     { label: 'Email', value: detailGuest.email || 'N/A' },
 
-                                    { label: 'Level', value: detailGuest.level || 1 },
+                                    { label: 'Level', value: getRankFromExp(detailGuest.xp || detailGuest.exp || 0).id },
                                     { label: 'XP', value: detailGuest.xp || 0 },
                                     { label: 'Gems', value: detailGuest.gems || 0 },
                                     { label: 'Banned', value: detailGuest.is_banned ? 'Yes' : 'No' },

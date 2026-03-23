@@ -3,6 +3,7 @@ import { Search, User, Ban, Edit2, Trash2, Info, BookOpen, Trophy, Swords, Award
 import { motion, AnimatePresence } from 'framer-motion';
 import { instructorAPI } from '../../services/api';
 import supabase from '../../lib/supabase';
+import { getRankFromExp } from '../../lib/rankSystem';
 
 const StudentManagement = ({ theme = 'dark' }) => {
     const [students, setStudents] = useState([]);
@@ -47,10 +48,10 @@ const StudentManagement = ({ theme = 'dark' }) => {
                         studentId: u.student_id || 'N/A',
                         status: u.is_banned ? 'inactive' : 'active',
                         avatar: u.avatar_url,
-                        level: u.level || 1,
-                        xp: u.xp || 0,
+                        level: getRankFromExp(u.xp || u.exp || 0).id,
+                        xp: u.xp || u.exp || 0,
                         gems: u.gems || 0,
-                        rankName: u.rank_name || 'Siege Novice',
+                        rankName: getRankFromExp(u.xp || u.exp || 0).name,
                         achievements: u.achievements || 0,
                         certificates: u.certificates || 0,
                         towersCompleted: u.towers_completed || 0,
@@ -131,13 +132,14 @@ const StudentManagement = ({ theme = 'dark' }) => {
                     // Count completed towers from tower_progress
                     const towerProgress = data.tower_progress || {};
                     const towersCompleted = Object.values(towerProgress).filter(v => v > 0).length;
+                    const currentExp = data.xp || data.exp || 0;
 
                     setEditingStudent({
                         ...student,
-                        level: data.level || 1,
-                        xp: data.xp || 0,
+                        level: getRankFromExp(currentExp).id,
+                        xp: currentExp,
                         gems: data.gems || 0,
-                        rankName: data.rank_name || 'Siege Novice',
+                        rankName: getRankFromExp(currentExp).name,
                         achievements: data.achievements_count || data.achievements || 0,
                         certificates: data.certificates_count || data.certificates || 0,
                         towersCompleted: towersCompleted,

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Activity, Server, Users, FileText, Activity as ActivityIcon, TrendingUp, MousePointer2 } from 'lucide-react';
+import { Activity, Server, Users, User, FileText, Activity as ActivityIcon, TrendingUp, MousePointer2 } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { instructorAPI } from '../../services/api';
 import supabase from '../../lib/supabase';

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Filter, MoreVertical, Shield, Trash2, UserSquare, Calendar, Clock, Play } from 'lucide-react';
+import { Search, Filter, MoreVertical, Shield, Trash2, User, Calendar, Clock, Play } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const MOCK_GUESTS = [
@@ -116,7 +116,7 @@ const GuestManagement = ({ theme = 'dark' }) => {
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {[
-                    { label: 'Total Guests', value: MOCK_GUESTS.length, icon: UserSquare, color: 'text-cyan-500', bg: 'bg-cyan-500/10', border: 'border-cyan-500/20' },
+                    { label: 'Total Guests', value: MOCK_GUESTS.length, icon: User, color: 'text-cyan-500', bg: 'bg-cyan-500/10', border: 'border-cyan-500/20' },
                     { label: 'Active Sessions', value: MOCK_GUESTS.filter(g => g.status === 'active').length, icon: Activity, color: 'text-emerald-500', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
                     { label: 'Purged Data', value: MOCK_GUESTS.filter(g => g.status === 'purged').length, icon: Trash2, color: 'text-rose-500', bg: 'bg-rose-500/10', border: 'border-rose-500/20' }
                 ].map((stat, i) => (
@@ -174,7 +174,7 @@ const GuestManagement = ({ theme = 'dark' }) => {
                                                         ? 'bg-slate-800 border-slate-700 text-slate-400'
                                                         : 'bg-slate-100 border-slate-200 text-slate-500'
                                                 }`}>
-                                                    <UserSquare className="w-4 h-4" />
+                                                    <User className="w-4 h-4" />
                                                 </div>
                                                 <div>
                                                     <div className={`font-mono font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{guest.id}</div>
@@ -231,7 +231,7 @@ const GuestManagement = ({ theme = 'dark' }) => {
                                 <tr>
                                     <td colSpan={5} className="p-8 text-center">
                                         <div className={`inline-flex flex-col items-center justify-center p-6 rounded-xl border border-dashed ${theme === 'dark' ? 'border-slate-700 bg-slate-800/50 text-slate-400' : 'border-slate-300 bg-slate-50 text-slate-500'}`}>
-                                            <UserSquare className="w-8 h-8 mb-2 opacity-50" />
+                                            <User className="w-8 h-8 mb-2 opacity-50" />
                                             <div className="font-bold text-sm">No Guests Found</div>
                                             <div className="text-xs uppercase tracking-widest mt-1 opacity-70">Adjust search parameters</div>
                                         </div>

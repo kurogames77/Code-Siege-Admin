@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, MoreVertical, Shield, Trash2, User, Calendar, Clock, Play, Activity, Ban, RefreshCcw, AlertTriangle, X, Eye } from 'lucide-react';
+import { Search, MoreVertical, Trash2, User, Calendar, Clock, Activity, Ban, AlertTriangle, X, Eye } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import supabase from '../../lib/supabase';
 
@@ -8,7 +8,6 @@ const GuestManagement = ({ theme = 'dark' }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
-    const [statusFilter, setStatusFilter] = useState('all');
     const [actionMenu, setActionMenu] = useState(null);
     const [confirmAction, setConfirmAction] = useState(null);
     const [detailGuest, setDetailGuest] = useState(null);
@@ -85,12 +84,7 @@ const GuestManagement = ({ theme = 'dark' }) => {
         const matchesSearch =
             (guest.username || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
             (guest.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (guest.student_code || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
             (guest.id || '').toLowerCase().includes(searchTerm.toLowerCase());
-
-        if (statusFilter === 'all') return matchesSearch;
-        if (statusFilter === 'active') return matchesSearch && !guest.is_banned;
-        if (statusFilter === 'banned') return matchesSearch && guest.is_banned;
         return matchesSearch;
     });
 
@@ -130,21 +124,8 @@ const GuestManagement = ({ theme = 'dark' }) => {
                 </div>
 
                 <div className="flex items-center gap-3 w-full md:w-auto">
-                    {/* Refresh */}
-                    <button
-                        onClick={fetchGuests}
-                        disabled={loading}
-                        className={`p-2 rounded-xl border transition-all ${theme === 'dark'
-                            ? 'bg-[#0B1224] border-cyan-500/20 text-cyan-400 hover:border-cyan-400'
-                            : 'bg-white border-slate-200 text-cyan-600 hover:border-cyan-500'
-                        } ${loading ? 'animate-spin' : ''}`}
-                        title="Refresh"
-                    >
-                        <RefreshCcw className="w-4 h-4" />
-                    </button>
-
                     {/* Search */}
-                    <div className="relative flex-1 md:w-64">
+                    <div className="relative flex-1 md:w-72">
                         <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`} />
                         <input
                             type="text"
@@ -157,24 +138,6 @@ const GuestManagement = ({ theme = 'dark' }) => {
                                     : 'bg-white border-slate-200 text-slate-900 placeholder-slate-400 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50'
                             }`}
                         />
-                    </div>
-
-                    {/* Filter */}
-                    <div className="relative">
-                        <Filter className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`} />
-                        <select
-                            value={statusFilter}
-                            onChange={(e) => setStatusFilter(e.target.value)}
-                            className={`pl-9 pr-8 py-2 rounded-xl border outline-none transition-all text-sm font-medium appearance-none cursor-pointer ${
-                                theme === 'dark'
-                                    ? 'bg-[#0B1224] border-cyan-500/20 text-white hover:border-cyan-400'
-                                    : 'bg-white border-slate-200 text-slate-900 hover:border-cyan-500'
-                            }`}
-                        >
-                            <option value="all">All Guests</option>
-                            <option value="active">Active</option>
-                            <option value="banned">Banned</option>
-                        </select>
                     </div>
                 </div>
             </div>
@@ -228,15 +191,20 @@ const GuestManagement = ({ theme = 'dark' }) => {
             {/* Main Table */}
             {!loading && (
                 <div className={`border rounded-xl overflow-hidden shadow-sm ${theme === 'dark' ? 'bg-[#0B1224] border-cyan-500/20' : 'bg-white border-slate-200'}`}>
-                    <div className="overflow-x-auto">
+                    <style>{`
+                        .guest-table-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+                        .guest-table-scroll::-webkit-scrollbar-track { background: ${theme === 'dark' ? '#0B1224' : '#f1f5f9'}; border-radius: 8px; }
+                        .guest-table-scroll::-webkit-scrollbar-thumb { background: ${theme === 'dark' ? '#1e293b' : '#cbd5e1'}; border-radius: 8px; }
+                        .guest-table-scroll::-webkit-scrollbar-thumb:hover { background: ${theme === 'dark' ? '#334155' : '#94a3b8'}; }
+                    `}</style>
+                    <div className="overflow-x-auto guest-table-scroll">
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className={`border-b text-[10px] uppercase tracking-widest font-bold ${theme === 'dark' ? 'bg-cyan-950/20 border-cyan-500/20 text-cyan-500' : 'bg-slate-50 border-slate-200 text-slate-500'}`}>
                                     <th className="p-4 indent-2">Guest</th>
-                                    <th className="p-4">Guest Code</th>
                                     <th className="p-4">Session Info</th>
-                                    <th className="p-4">Stats</th>
-                                    <th className="p-4">Status</th>
+                                    <th className="p-4 text-center">Stats</th>
+                                    <th className="p-4 text-center">Status</th>
                                     <th className="p-4 text-center">Actions</th>
                                 </tr>
                             </thead>
@@ -277,12 +245,6 @@ const GuestManagement = ({ theme = 'dark' }) => {
                                                     </div>
                                                 </td>
 
-                                                {/* Guest Code */}
-                                                <td className="p-4">
-                                                    <div className={`font-mono text-xs font-bold ${theme === 'dark' ? 'text-cyan-400' : 'text-cyan-600'}`}>
-                                                        {guest.student_code || '—'}
-                                                    </div>
-                                                </td>
 
                                                 {/* Session Info */}
                                                 <td className="p-4">
@@ -298,16 +260,16 @@ const GuestManagement = ({ theme = 'dark' }) => {
 
                                                 {/* Stats */}
                                                 <td className="p-4">
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="text-center">
+                                                    <div className="flex items-center justify-center gap-5">
+                                                        <div className="flex flex-col items-center">
                                                             <div className={`font-black text-sm ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{guest.level || 1}</div>
                                                             <div className={`text-[9px] uppercase tracking-widest font-bold ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>Level</div>
                                                         </div>
-                                                        <div className="text-center">
+                                                        <div className="flex flex-col items-center">
                                                             <div className={`font-black text-sm ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{guest.xp || 0}</div>
                                                             <div className={`text-[9px] uppercase tracking-widest font-bold ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>XP</div>
                                                         </div>
-                                                        <div className="text-center">
+                                                        <div className="flex flex-col items-center">
                                                             <div className={`font-black text-sm ${theme === 'dark' ? 'text-amber-400' : 'text-amber-600'}`}>{guest.gems || 0}</div>
                                                             <div className={`text-[9px] uppercase tracking-widest font-bold ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>Gems</div>
                                                         </div>
@@ -315,7 +277,7 @@ const GuestManagement = ({ theme = 'dark' }) => {
                                                 </td>
 
                                                 {/* Status */}
-                                                <td className="p-4">
+                                                <td className="p-4 text-center">
                                                     <span className={`px-2.5 py-1 rounded-md text-[10px] uppercase tracking-widest font-bold border ${
                                                         status === 'online'
                                                             ? (theme === 'dark' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-emerald-50 text-emerald-600 border-emerald-200')
@@ -384,7 +346,7 @@ const GuestManagement = ({ theme = 'dark' }) => {
                                     })
                                 ) : (
                                     <tr>
-                                        <td colSpan={6} className="p-8 text-center">
+                                        <td colSpan={5} className="p-8 text-center">
                                             <div className={`inline-flex flex-col items-center justify-center p-6 rounded-xl border border-dashed ${theme === 'dark' ? 'border-slate-700 bg-slate-800/50 text-slate-400' : 'border-slate-300 bg-slate-50 text-slate-500'}`}>
                                                 <User className="w-8 h-8 mb-2 opacity-50" />
                                                 <div className="font-bold text-sm">{guests.length === 0 ? 'No Guest Accounts' : 'No Guests Found'}</div>
@@ -474,7 +436,7 @@ const GuestManagement = ({ theme = 'dark' }) => {
                                     { label: 'User ID', value: detailGuest.id },
                                     { label: 'Username', value: detailGuest.username || 'N/A' },
                                     { label: 'Email', value: detailGuest.email || 'N/A' },
-                                    { label: 'Guest Code', value: detailGuest.student_code || 'N/A' },
+
                                     { label: 'Level', value: detailGuest.level || 1 },
                                     { label: 'XP', value: detailGuest.xp || 0 },
                                     { label: 'Gems', value: detailGuest.gems || 0 },

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Filter, MoreVertical, Shield, Trash2, User, Calendar, Clock, Play } from 'lucide-react';
+import { Search, Filter, MoreVertical, Shield, Trash2, User, Calendar, Clock, Play, Activity } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const MOCK_GUESTS = [

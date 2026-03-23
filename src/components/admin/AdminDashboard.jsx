@@ -74,7 +74,7 @@ const AdminDashboard = ({ theme = 'dark' }) => {
                 setStudentData([
                     { month: 'Jan', count: 0 }, { month: 'Feb', count: 0 },
                     { month: 'Mar', count: 0 }, { month: 'Apr', count: 0 },
-                    { month: 'May', count: 0 }, { month: 'Jun', count: data.totalStudents },
+                    { month: 'May', count: 0 }, { month: 'Jun', count: data.totalStudents + (guestCount || 0) },
                 ]);
 
                 setBattleDistribution([
@@ -168,7 +168,7 @@ const AdminDashboard = ({ theme = 'dark' }) => {
                 <div className={`border rounded-[2.5rem] p-8 backdrop-blur-sm relative overflow-hidden transition-all duration-500 ${theme === 'dark' ? 'bg-[#0B1224]/40 border-white/5' : 'bg-white border-slate-200 shadow-sm'}`}>
                     <div className="flex items-center justify-between mb-8">
                         <div>
-                            <h3 className={`text-xs font-black uppercase tracking-[0.3em] transition-colors ${theme === 'dark' ? 'text-slate-400' : 'text-slate-400'}`}>Student Growth</h3>
+                            <h3 className={`text-xs font-black uppercase tracking-[0.3em] transition-colors ${theme === 'dark' ? 'text-slate-400' : 'text-slate-400'}`}>Student & Guest Growth</h3>
                             <p className={`text-lg font-black italic mt-1 transition-colors ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>Monthly Registrations</p>
                         </div>
                         <div className={`p-2 rounded-lg transition-colors ${theme === 'dark' ? 'bg-cyan-500/10 text-cyan-400' : 'bg-cyan-50 text-cyan-600'}`}>

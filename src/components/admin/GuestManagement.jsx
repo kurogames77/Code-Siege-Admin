@@ -290,7 +290,7 @@ const GuestManagement = ({ theme = 'dark' }) => {
                                                 </td>
 
                                                 {/* Actions */}
-                                                <td className="p-4 text-center relative z-40">
+                                                <td className={`p-4 text-center relative ${actionMenu === guest.id ? 'z-50' : ''}`}>
                                                     <button
                                                         onClick={() => setActionMenu(actionMenu === guest.id ? null : guest.id)}
                                                         className={`p-2 rounded-lg transition-colors ${

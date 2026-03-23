@@ -1,16 +1,16 @@
 export const RANKS = [
     { id: 1, minExp: 0, name: 'SIEGE NOVICE' },
     { id: 2, minExp: 1000, name: 'CODE INITIATE' },
-    { id: 3, minExp: 2500, name: 'BINARY APPRENTICE' },
-    { id: 4, minExp: 5000, name: 'SYNTAX SOLDIER' },
+    { id: 3, minExp: 2800, name: 'BINARY APPRENTICE' },
+    { id: 4, minExp: 8000, name: 'SYNTAX SOLDIER' },
     { id: 5, minExp: 10000, name: 'DEBUG KNIGHT' },
     { id: 6, minExp: 20000, name: 'SCRIPT MASTER' },
     { id: 7, minExp: 40000, name: 'CODE WARRIOR' },
-    { id: 8, minExp: 75000, name: 'SYSTEM SENTINEL' },
-    { id: 9, minExp: 125000, name: 'ELITE COMPILER' },
-    { id: 10, minExp: 200000, name: 'GRANDMASTER HACKER' },
-    { id: 11, minExp: 350000, name: 'APEX LEGEND' },
-    { id: 12, minExp: 500000, name: 'SIEGE DEITY' },
+    { id: 8, minExp: 78000, name: 'SYSTEM SENTINEL' },
+    { id: 9, minExp: 150000, name: 'ELITE COMPILER' },
+    { id: 10, minExp: 300000, name: 'GRANDMASTER HACKER' },
+    { id: 11, minExp: 500000, name: 'APEX LEGEND' },
+    { id: 12, minExp: 999000, name: 'SIEGE DEITY' },
 ];
 
 export const getRankFromExp = (exp) => {

@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
 import AdminSidebar from '../components/admin/AdminSidebar';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Sun, Moon } from 'lucide-react';
+import { Sun, Moon, ShieldAlert, Clock } from 'lucide-react';
+import useIdleTimer from '../hooks/useIdleTimer';
 
 import AdminDashboard from '../components/admin/AdminDashboard';
 import InstructorManagement from '../components/admin/InstructorManagement';
@@ -14,10 +15,22 @@ import StudentManagement from '../components/admin/StudentManagement';
 import GuestManagement from '../components/admin/GuestManagement';
 
 const AdminPage = () => {
-    const { user, isAuthenticated, loading } = useUser();
+    const { user, isAuthenticated, loading, logout } = useUser();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('overview');
     const [theme, setTheme] = useState('dark');
+
+    // ── 5-Minute Inactivity Auto-Logout ─────────────────────
+    const { isWarning, secondsLeft, isTimedOut, resetTimer } = useIdleTimer();
+
+    useEffect(() => {
+        if (isTimedOut) {
+            // Session expired due to inactivity — force logout
+            logout().then(() => {
+                navigate('/', { replace: true, state: { timedOut: true } });
+            });
+        }
+    }, [isTimedOut]);
 
     useEffect(() => {
         if (!loading) {
@@ -119,6 +132,89 @@ const AdminPage = () => {
                     </AnimatePresence>
                 </div>
             </main>
+
+            {/* ── Idle Warning Modal ──────────────────────────────── */}
+            <AnimatePresence>
+                {isWarning && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm"
+                    >
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                            className={`w-full max-w-md p-8 rounded-2xl border shadow-2xl text-center ${
+                                theme === 'dark'
+                                    ? 'bg-[#0B1224] border-amber-500/30 shadow-amber-500/10'
+                                    : 'bg-white border-amber-300 shadow-amber-200/30'
+                            }`}
+                        >
+                            {/* Pulsing icon */}
+                            <div className="flex justify-center mb-5">
+                                <div className={`w-16 h-16 rounded-full flex items-center justify-center animate-pulse ${
+                                    theme === 'dark'
+                                        ? 'bg-amber-500/10 border border-amber-500/30'
+                                        : 'bg-amber-50 border border-amber-200'
+                                }`}>
+                                    <Clock className="w-8 h-8 text-amber-500" />
+                                </div>
+                            </div>
+
+                            {/* Title */}
+                            <h2 className={`text-xl font-black uppercase italic tracking-tight mb-2 ${
+                                theme === 'dark' ? 'text-white' : 'text-slate-900'
+                            }`}>
+                                Session <span className="text-amber-500">Expiring</span>
+                            </h2>
+
+                            {/* Description */}
+                            <p className={`text-sm mb-6 ${
+                                theme === 'dark' ? 'text-slate-400' : 'text-slate-600'
+                            }`}>
+                                You've been inactive. For security, your session will end automatically.
+                            </p>
+
+                            {/* Countdown */}
+                            <div className={`text-5xl font-black tabular-nums mb-6 ${
+                                secondsLeft <= 10 ? 'text-red-500 animate-pulse' : 'text-amber-500'
+                            }`}>
+                                {secondsLeft}<span className="text-lg ml-1 opacity-60">s</span>
+                            </div>
+
+                            {/* Progress bar */}
+                            <div className={`w-full h-1.5 rounded-full mb-6 overflow-hidden ${
+                                theme === 'dark' ? 'bg-slate-800' : 'bg-slate-200'
+                            }`}>
+                                <div
+                                    className={`h-full rounded-full transition-all duration-1000 ease-linear ${
+                                        secondsLeft <= 10 ? 'bg-red-500' : 'bg-amber-500'
+                                    }`}
+                                    style={{ width: `${(secondsLeft / 60) * 100}%` }}
+                                />
+                            </div>
+
+                            {/* Stay Logged In button */}
+                            <button
+                                onClick={resetTimer}
+                                className="w-full py-3.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-bold text-sm uppercase tracking-widest shadow-lg shadow-cyan-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                            >
+                                <ShieldAlert className="w-4 h-4 inline-block mr-2 -mt-0.5" />
+                                Stay Logged In
+                            </button>
+
+                            <p className={`text-[10px] font-bold uppercase tracking-widest mt-4 ${
+                                theme === 'dark' ? 'text-cyan-500/40' : 'text-cyan-600/50'
+                            }`}>
+                                {'< SECURITY PROTOCOL ACTIVE >'}
+                            </p>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

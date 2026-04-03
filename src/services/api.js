@@ -233,6 +233,18 @@ export const instructorAPI = {
             totalPages: Math.ceil(count / limit)
         };
     },
+
+    // Ban Request Management
+    getBanRequests: async (status = 'all') => {
+        return apiRequest(`/instructor/ban-requests?status=${status}`);
+    },
+
+    respondToBanRequest: async (requestId, action) => {
+        return apiRequest(`/instructor/ban-requests/${requestId}/respond`, {
+            method: 'PATCH',
+            body: JSON.stringify({ action }),
+        });
+    },
 };
 
 export default {

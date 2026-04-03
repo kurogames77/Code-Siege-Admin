@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, User, Ban, Edit2, Trash2, Info, BookOpen, Trophy, Swords, Award, Gem, Shield, Star, Loader2 } from 'lucide-react';
+import { Search, User, Ban, Edit2, Trash2, Info, BookOpen, Trophy, Swords, Award, Gem, Shield, Star, Loader2, Bell, X, Check, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { instructorAPI } from '../../services/api';
 import supabase from '../../lib/supabase';
@@ -25,6 +25,12 @@ const StudentManagement = ({ theme = 'dark' }) => {
         onConfirm: null,
         type: 'danger'
     });
+
+    // Ban Request Notifications
+    const [banRequests, setBanRequests] = useState([]);
+    const [showBanPanel, setShowBanPanel] = useState(false);
+    const [banLoading, setBanLoading] = useState(false);
+    const pendingCount = banRequests.filter(r => r.status === 'pending').length;
 
     const openConfirm = (title, message, actionLabel, onConfirm, type = 'danger') => {
         setConfirmDialog({ isOpen: true, title, message, actionLabel, onConfirm, type });
@@ -70,7 +76,33 @@ const StudentManagement = ({ theme = 'dark' }) => {
 
     useEffect(() => {
         fetchStudents();
+        fetchBanRequests();
     }, []);
+
+    const fetchBanRequests = async () => {
+        try {
+            setBanLoading(true);
+            const res = await instructorAPI.getBanRequests('pending');
+            setBanRequests(res.requests || []);
+        } catch (error) {
+            console.error('Failed to fetch ban requests:', error);
+        } finally {
+            setBanLoading(false);
+        }
+    };
+
+    const handleBanResponse = async (requestId, action) => {
+        try {
+            await instructorAPI.respondToBanRequest(requestId, action);
+            fetchBanRequests();
+            if (action === 'approve') {
+                fetchStudents(); // Refresh to show updated ban status
+            }
+        } catch (error) {
+            console.error('Failed to respond to ban request:', error);
+            alert('Failed to process ban request');
+        }
+    };
 
     const handleDeactivateUser = async (id, currentStatus) => {
         const isBanned = currentStatus === 'active';
@@ -231,7 +263,23 @@ const StudentManagement = ({ theme = 'dark' }) => {
                                 <th className="p-4 border-b">ID Number</th>
                                 <th className="p-4 border-b hidden md:table-cell">Email</th>
                                 <th className="p-4 border-b text-center">Status</th>
-                                <th className="p-4 border-b text-right">Actions</th>
+                                <th className="p-4 border-b text-right">
+                                    <div className="flex items-center justify-end gap-2">
+                                        Actions
+                                        <button
+                                            onClick={() => setShowBanPanel(!showBanPanel)}
+                                            className="relative p-1.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500 hover:text-white transition-colors"
+                                            title="Ban Request Notifications"
+                                        >
+                                            <Bell className="w-4 h-4" />
+                                            {pendingCount > 0 && (
+                                                <span className="absolute -top-1.5 -right-1.5 w-5 h-5 flex items-center justify-center bg-rose-500 text-white text-[9px] font-black rounded-full shadow-lg animate-pulse">
+                                                    {pendingCount}
+                                                </span>
+                                            )}
+                                        </button>
+                                    </div>
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
@@ -314,6 +362,113 @@ const StudentManagement = ({ theme = 'dark' }) => {
                     </table>
                 </div>
             </div>
+
+            {/* Ban Request Notification Panel */}
+            <AnimatePresence>
+                {showBanPanel && (
+                    <motion.div
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 20 }}
+                        className={`fixed top-0 right-0 h-full w-full max-w-md z-[90] border-l shadow-2xl flex flex-col ${
+                            theme === 'dark' ? 'bg-[#0B1224] border-amber-500/20' : 'bg-white border-slate-200'
+                        }`}
+                    >
+                        {/* Header */}
+                        <div className={`p-6 border-b flex items-center justify-between ${theme === 'dark' ? 'border-white/10' : 'border-slate-200'}`}>
+                            <div className="flex items-center gap-3">
+                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${theme === 'dark' ? 'bg-amber-500/10 border border-amber-500/30' : 'bg-amber-50 border border-amber-200'}`}>
+                                    <Bell className="w-5 h-5 text-amber-500" />
+                                </div>
+                                <div>
+                                    <h3 className={`text-lg font-black uppercase italic tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                                        Ban <span className="text-amber-500">Requests</span>
+                                    </h3>
+                                    <p className={`text-[10px] font-bold uppercase tracking-widest ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
+                                        {pendingCount} pending
+                                    </p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setShowBanPanel(false)}
+                                className={`p-2 rounded-full transition-all hover:rotate-180 duration-300 ${theme === 'dark' ? 'hover:bg-rose-500 hover:text-white text-slate-400' : 'hover:bg-rose-500 hover:text-white text-slate-500'}`}
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        {/* Request List */}
+                        <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
+                            {banLoading ? (
+                                <div className="flex items-center justify-center p-12">
+                                    <Loader2 className="w-6 h-6 animate-spin text-amber-500" />
+                                </div>
+                            ) : banRequests.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center p-12 text-center">
+                                    <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${theme === 'dark' ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                                        <Check className={`w-8 h-8 ${theme === 'dark' ? 'text-emerald-400' : 'text-emerald-500'}`} />
+                                    </div>
+                                    <h4 className={`font-bold text-sm ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>All Clear</h4>
+                                    <p className={`text-xs mt-1 ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>No pending ban requests</p>
+                                </div>
+                            ) : (
+                                banRequests.filter(r => r.status === 'pending').map((request) => (
+                                    <motion.div
+                                        key={request.id}
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className={`p-4 rounded-xl border ${theme === 'dark' ? 'bg-slate-900/50 border-white/5' : 'bg-slate-50 border-slate-200'}`}
+                                    >
+                                        <div className="flex items-start gap-3 mb-3">
+                                            <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${theme === 'dark' ? 'bg-amber-500/10 border border-amber-500/20' : 'bg-amber-50 border border-amber-200'}`}>
+                                                <AlertTriangle className="w-4 h-4 text-amber-500" />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className={`font-bold text-sm ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                                                    {request.student_name || 'Unknown Student'}
+                                                </div>
+                                                <div className={`text-[10px] font-bold uppercase tracking-widest mt-0.5 ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
+                                                    Requested by {request.instructor_name || 'Instructor'}
+                                                </div>
+                                                {request.tower_name && (
+                                                    <div className="text-[10px] font-bold text-cyan-500 uppercase tracking-widest mt-0.5">
+                                                        Tower: {request.tower_name}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {request.reason && (
+                                            <div className={`p-3 rounded-lg text-xs mb-3 ${theme === 'dark' ? 'bg-slate-800/50 text-slate-400' : 'bg-white text-slate-500'}`}>
+                                                <span className="font-bold text-slate-500">Reason:</span> {request.reason}
+                                            </div>
+                                        )}
+
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => handleBanResponse(request.id, 'reject')}
+                                                className={`flex-1 py-2 rounded-lg text-xs font-bold uppercase tracking-widest border transition-colors ${
+                                                    theme === 'dark'
+                                                        ? 'border-white/5 text-slate-400 hover:bg-white/5'
+                                                        : 'border-slate-200 text-slate-500 hover:bg-slate-100'
+                                                }`}
+                                            >
+                                                Reject
+                                            </button>
+                                            <button
+                                                onClick={() => handleBanResponse(request.id, 'approve')}
+                                                className="flex-1 py-2 rounded-lg text-xs font-bold uppercase tracking-widest bg-rose-500/20 border border-rose-500/30 text-rose-400 hover:bg-rose-500 hover:text-white transition-colors"
+                                            >
+                                                Approve Ban
+                                            </button>
+                                        </div>
+                                    </motion.div>
+                                ))
+                            )}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* STUDENT Modal (Edit or Info) */}
             <AnimatePresence>

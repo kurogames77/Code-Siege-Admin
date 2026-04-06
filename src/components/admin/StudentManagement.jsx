@@ -156,7 +156,7 @@ const StudentManagement = ({ theme = 'dark' }) => {
             try {
                 const { data, error } = await supabase
                     .from('users')
-                    .select('*')
+                    .select('*, user_progress(*)')
                     .eq('id', student.id)
                     .single();
 
@@ -164,13 +164,16 @@ const StudentManagement = ({ theme = 'dark' }) => {
                     // Count completed towers from tower_progress
                     const towerProgress = data.tower_progress || {};
                     const towersCompleted = Object.values(towerProgress).filter(v => v > 0).length;
-                    const currentExp = data.xp || data.exp || 0;
+                    
+                    const progressData = Array.isArray(data.user_progress) ? data.user_progress[0] : data.user_progress;
+                    const currentExp = progressData?.xp || data.exp || 0;
+                    const currentGems = progressData?.gems || data.gems || 0;
 
                     setEditingStudent({
                         ...student,
                         level: getRankFromExp(currentExp).id,
                         xp: currentExp,
-                        gems: data.gems || 0,
+                        gems: currentGems,
                         rankName: getRankFromExp(currentExp).name,
                         achievements: data.achievements_count || data.achievements || 0,
                         certificates: data.certificates_count || data.certificates || 0,

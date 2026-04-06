@@ -21,12 +21,26 @@ const GuestManagement = ({ theme = 'dark' }) => {
 
             const { data, error: fetchError } = await supabase
                 .from('users')
-                .select('id, username, email, student_code, role, level, xp, gems, is_banned, last_active_at, created_at, avatar_url')
+                .select(`
+                    id, username, email, student_code, role, is_banned, last_active_at, created_at, avatar_url,
+                    user_progress(level, xp, gems)
+                `)
                 .eq('role', 'guest')
                 .order('created_at', { ascending: false });
 
             if (fetchError) throw fetchError;
-            setGuests(data || []);
+            
+            const mappedData = (data || []).map(guest => {
+                const progress = Array.isArray(guest.user_progress) ? guest.user_progress[0] : guest.user_progress;
+                return {
+                    ...guest,
+                    level: progress?.level || 1,
+                    xp: progress?.xp || 0,
+                    gems: progress?.gems || 0
+                };
+            });
+            
+            setGuests(mappedData);
         } catch (err) {
             console.error('Failed to fetch guests:', err);
             setError(err.message);

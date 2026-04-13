@@ -18,7 +18,8 @@ const GuestManagement = ({ theme = 'dark' }) => {
     const [banRequests, setBanRequests] = useState([]);
     const [showBanPanel, setShowBanPanel] = useState(false);
     const [banLoading, setBanLoading] = useState(false);
-    const pendingCount = banRequests.filter(r => r.status === 'pending').length;
+    const guestBanRequests = banRequests.filter(r => guests.some(g => g.id === r.student_id));
+    const pendingCount = guestBanRequests.filter(r => r.status === 'pending').length;
 
     // Fetch real guest data from Supabase
     const fetchGuests = async () => {
@@ -476,7 +477,7 @@ const GuestManagement = ({ theme = 'dark' }) => {
                                     <p className={`text-xs mt-1 ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>No pending ban requests</p>
                                 </div>
                             ) : (
-                                banRequests.filter(r => r.status === 'pending').map((request) => (
+                                guestBanRequests.filter(r => r.status === 'pending').map((request) => (
                                     <motion.div
                                         key={request.id}
                                         initial={{ opacity: 0, y: 10 }}

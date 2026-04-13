@@ -30,7 +30,8 @@ const StudentManagement = ({ theme = 'dark' }) => {
     const [banRequests, setBanRequests] = useState([]);
     const [showBanPanel, setShowBanPanel] = useState(false);
     const [banLoading, setBanLoading] = useState(false);
-    const pendingCount = banRequests.filter(r => r.status === 'pending').length;
+    const studentBanRequests = banRequests.filter(r => students.some(s => s.id === r.student_id));
+    const pendingCount = studentBanRequests.filter(r => r.status === 'pending').length;
 
     const openConfirm = (title, message, actionLabel, onConfirm, type = 'danger') => {
         setConfirmDialog({ isOpen: true, title, message, actionLabel, onConfirm, type });
@@ -415,7 +416,7 @@ const StudentManagement = ({ theme = 'dark' }) => {
                                     <p className={`text-xs mt-1 ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>No pending ban requests</p>
                                 </div>
                             ) : (
-                                banRequests.filter(r => r.status === 'pending').map((request) => (
+                                studentBanRequests.filter(r => r.status === 'pending').map((request) => (
                                     <motion.div
                                         key={request.id}
                                         initial={{ opacity: 0, y: 10 }}

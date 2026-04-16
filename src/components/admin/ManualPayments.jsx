@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle2, XCircle, Clock, Search, RefreshCw, Send } from 'lucide-react';
-import { paymentsAPI, userAPI } from '../../../services/api';
-import { useToast } from '../../../contexts/ToastContext';
-import { useUser } from '../../../contexts/UserContext';
-import gemIcon from '../../../assets/gem.png';
+import { paymentsAPI } from '../../services/api';
+import { useToast } from '../../contexts/ToastContext';
+import { useUser } from '../../contexts/UserContext';
+import gemIcon from '../../assets/gem.png';
 
 const ManualPayments = () => {
     const { user } = useUser();

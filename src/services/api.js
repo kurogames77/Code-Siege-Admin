@@ -249,10 +249,10 @@ export const instructorAPI = {
 
 export const paymentsAPI = {
     getManualPayments: async (status = '') => {
-        return apiRequest(/payments/manual-payments?status= + status);
+        return apiRequest(`/payments/manual-payments?status=${status}`);
     },
     updatePaymentStatus: async (paymentId, status, adminId) => {
-        return apiRequest(/payments/ + paymentId + /status, {
+        return apiRequest(`/payments/${paymentId}/status`, {
             method: 'PATCH',
             body: JSON.stringify({ status, adminId }),
         });

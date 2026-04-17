@@ -72,7 +72,7 @@ const AdminPage = () => {
             case 'guests':
                 return <GuestManagement theme={theme} />;
             case 'payments':
-                return <ManualPayments theme={theme} />;
+                return <ManualPayments theme={theme} setActiveTab={setActiveTab} />;
             case 'logs':
                 return <SystemLogs theme={theme} />;
             case 'security':

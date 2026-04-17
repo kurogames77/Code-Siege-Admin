@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle2, XCircle, Clock, Search, RefreshCw, Send } from 'lucide-react';
+import { CheckCircle2, XCircle, Clock, Search, RefreshCw, Send, ArrowLeft } from 'lucide-react';
 import { paymentsAPI } from '../../services/api';
 import { useToast } from '../../contexts/ToastContext';
 import { useUser } from '../../contexts/UserContext';
 import gemIcon from '../../assets/gem.png';
 
-const ManualPayments = () => {
+const ManualPayments = ({ setActiveTab }) => {
     const { user } = useUser();
     const { success, error: toastError } = useToast();
     const [payments, setPayments] = useState([]);
@@ -67,6 +67,17 @@ const ManualPayments = () => {
 
     return (
         <div className="space-y-6">
+            {/* Back Button */}
+            <div>
+                <button
+                    onClick={() => setActiveTab('students')}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-black/20 hover:bg-black/40 text-slate-400 hover:text-white rounded-lg border border-white/10 transition-colors text-xs font-bold uppercase tracking-widest mb-2 w-fit"
+                >
+                    <ArrowLeft className="w-4 h-4" />
+                    Back to Student Management
+                </button>
+            </div>
+
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center justify-between">
                 <div>
                     <h2 className="text-2xl font-black text-white italic tracking-tighter uppercase mb-1 flex items-center gap-2">

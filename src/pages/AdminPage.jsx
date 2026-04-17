@@ -19,6 +19,7 @@ const AdminPage = () => {
     const { user, isAuthenticated, loading, logout } = useUser();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('overview');
+    const [previousTab, setPreviousTab] = useState('students');
     const [theme, setTheme] = useState('dark');
 
     // ── 5-Minute Inactivity Auto-Logout ─────────────────────
@@ -64,15 +65,15 @@ const AdminPage = () => {
             case 'instructors':
                 return <InstructorManagement theme={theme} />;
             case 'students':
-                return <StudentManagement theme={theme} setActiveTab={setActiveTab} />;
+                return <StudentManagement theme={theme} setActiveTab={(tab) => { if(tab === 'payments') setPreviousTab('students'); setActiveTab(tab); }} />;
             case 'applications':
                 return <InstructorApplications theme={theme} />;
             case 'codes':
                 return <StudentCodesManager theme={theme} />;
             case 'guests':
-                return <GuestManagement theme={theme} setActiveTab={setActiveTab} />;
+                return <GuestManagement theme={theme} setActiveTab={(tab) => { if(tab === 'payments') setPreviousTab('guests'); setActiveTab(tab); }} />;
             case 'payments':
-                return <ManualPayments theme={theme} setActiveTab={setActiveTab} />;
+                return <ManualPayments theme={theme} setActiveTab={setActiveTab} previousTab={previousTab} />;
             case 'logs':
                 return <SystemLogs theme={theme} />;
             case 'security':

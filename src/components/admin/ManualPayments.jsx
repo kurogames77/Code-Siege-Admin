@@ -6,7 +6,7 @@ import { useToast } from '../../contexts/ToastContext';
 import { useUser } from '../../contexts/UserContext';
 import gemIcon from '../../assets/gem.png';
 
-const ManualPayments = ({ setActiveTab }) => {
+const ManualPayments = ({ setActiveTab, previousTab = 'students' }) => {
     const { user } = useUser();
     const { success, error: toastError } = useToast();
     const [payments, setPayments] = useState([]);
@@ -70,11 +70,11 @@ const ManualPayments = ({ setActiveTab }) => {
             {/* Back Button */}
             <div>
                 <button
-                    onClick={() => setActiveTab('students')}
+                    onClick={() => setActiveTab(previousTab)}
                     className="flex items-center gap-2 px-3 py-1.5 bg-black/20 hover:bg-black/40 text-slate-400 hover:text-white rounded-lg border border-white/10 transition-colors text-xs font-bold uppercase tracking-widest mb-2 w-fit"
                 >
                     <ArrowLeft className="w-4 h-4" />
-                    Back to Student Management
+                    Back to {previousTab === 'guests' ? 'Guest Management' : 'Student Management'}
                 </button>
             </div>
 

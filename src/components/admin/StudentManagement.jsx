@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Search, User, Ban, Edit2, Trash2, Info, BookOpen, Trophy, Swords, Award, Gem, Shield, Star, Loader2, Bell, X, Check, AlertTriangle } from 'lucide-react';
+import { Search, User, Ban, Edit2, Trash2, Info, BookOpen, Trophy, Swords, Award, Gem, Shield, Star, Loader2, Bell, X, Check, AlertTriangle, CreditCard } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { instructorAPI } from '../../services/api';
 import supabase from '../../lib/supabase';
 import { getRankFromExp } from '../../lib/rankSystem';
 
-const StudentManagement = ({ theme = 'dark' }) => {
+const StudentManagement = ({ theme = 'dark', setActiveTab }) => {
     const [students, setStudents] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [studentSearch, setStudentSearch] = useState('');
@@ -270,6 +270,13 @@ const StudentManagement = ({ theme = 'dark' }) => {
                                 <th className="p-4 border-b text-right">
                                     <div className="flex items-center justify-end gap-2">
                                         Actions
+                                        <button
+                                            onClick={() => setActiveTab('payments')}
+                                            className="relative p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500 hover:text-white transition-colors"
+                                            title="Payment Verification"
+                                        >
+                                            <CreditCard className="w-4 h-4" />
+                                        </button>
                                         <button
                                             onClick={() => setShowBanPanel(!showBanPanel)}
                                             className="relative p-1.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500 hover:text-white transition-colors"

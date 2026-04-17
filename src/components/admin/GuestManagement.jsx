@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Search, MoreVertical, Trash2, User, Calendar, Clock, Activity, Ban, AlertTriangle, X, Eye, Bell, Check } from 'lucide-react';
+import { Search, MoreVertical, Trash2, User, Calendar, Clock, Activity, Ban, AlertTriangle, X, Eye, Bell, Check, CreditCard } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import supabase from '../../lib/supabase';
 import { getRankFromExp } from '../../lib/rankSystem';
 import { instructorAPI } from '../../services/api';
 
-const GuestManagement = ({ theme = 'dark' }) => {
+const GuestManagement = ({ theme = 'dark', setActiveTab }) => {
     const [guests, setGuests] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -257,6 +257,13 @@ const GuestManagement = ({ theme = 'dark' }) => {
                                     <th className="p-4 text-center">
                                         <div className="flex items-center justify-center gap-2">
                                             Actions
+                                            <button
+                                                onClick={() => setActiveTab('payments')}
+                                                className="relative p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500 hover:text-white transition-colors"
+                                                title="Payment Verification"
+                                            >
+                                                <CreditCard className="w-4 h-4" />
+                                            </button>
                                             <button
                                                 onClick={() => setShowBanPanel(!showBanPanel)}
                                                 className="relative p-1.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500 hover:text-white transition-colors"

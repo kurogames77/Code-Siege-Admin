@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { CheckCircle2, XCircle, Clock, Search, RefreshCw, Send, ArrowLeft } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { CheckCircle2, XCircle, Clock, Search, RefreshCw, Send, ArrowLeft, AlertTriangle } from 'lucide-react';
 import { paymentsAPI } from '../../services/api';
 import { useToast } from '../../contexts/ToastContext';
 import { useUser } from '../../contexts/UserContext';
@@ -13,6 +14,7 @@ const ManualPayments = ({ setActiveTab, previousTab = 'students' }) => {
     const [loading, setLoading] = useState(true);
     const [processing, setProcessing] = useState(false);
     const [filter, setFilter] = useState('pending'); // pending, approved, rejected, all
+    const [confirmModal, setConfirmModal] = useState({ isOpen: false, id: null, newStatus: null });
 
     const fetchPayments = async () => {
         setLoading(true);
@@ -32,8 +34,14 @@ const ManualPayments = ({ setActiveTab, previousTab = 'students' }) => {
         fetchPayments();
     }, [filter]);
 
-    const handleUpdateStatus = async (id, newStatus) => {
-        if (!confirm(`Are you sure you want to mark this payment as ${newStatus}?`)) return;
+    const initiateUpdate = (id, newStatus) => {
+        setConfirmModal({ isOpen: true, id, newStatus });
+    };
+
+    const handleConfirmUpdate = async () => {
+        const { id, newStatus } = confirmModal;
+        setConfirmModal({ isOpen: false, id: null, newStatus: null });
+        
         setProcessing(true);
         try {
             await paymentsAPI.updatePaymentStatus(id, newStatus, user.id);
@@ -179,14 +187,14 @@ const ManualPayments = ({ setActiveTab, previousTab = 'students' }) => {
                                                 <div className="flex items-center justify-end gap-2">
                                                     <button
                                                         disabled={processing}
-                                                        onClick={() => handleUpdateStatus(payment.id, 'approved')}
+                                                        onClick={() => initiateUpdate(payment.id, 'approved')}
                                                         className="px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-600 text-emerald-500 hover:text-white border border-emerald-500/30 rounded-lg text-xs font-black uppercase tracking-widest transition-colors disabled:opacity-50"
                                                     >
                                                         Approve
                                                     </button>
                                                     <button
                                                         disabled={processing}
-                                                        onClick={() => handleUpdateStatus(payment.id, 'rejected')}
+                                                        onClick={() => initiateUpdate(payment.id, 'rejected')}
                                                         className="px-3 py-1.5 bg-rose-600/20 hover:bg-rose-600 text-rose-500 hover:text-white border border-rose-500/30 rounded-lg text-xs font-black uppercase tracking-widest transition-colors disabled:opacity-50"
                                                     >
                                                         Reject
@@ -205,6 +213,53 @@ const ManualPayments = ({ setActiveTab, previousTab = 'students' }) => {
                     </table>
                 </div>
             </div>
+
+            {/* Custom Confirmation Modal */}
+            {confirmModal.isOpen && createPortal(
+                <AnimatePresence mode="wait">
+                    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="w-full max-w-sm p-6 rounded-2xl border border-cyan-500/20 bg-[#0B1224] shadow-xl"
+                        >
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${confirmModal.newStatus === 'approved' ? 'bg-emerald-500/20 border-emerald-500/30 text-emerald-500' : 'bg-rose-500/20 border-rose-500/30 text-rose-500'}`}>
+                                    {confirmModal.newStatus === 'approved' ? <CheckCircle2 className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
+                                </div>
+                                <h3 className="text-lg font-black uppercase tracking-wide text-white">
+                                    {confirmModal.newStatus === 'approved' ? 'Approve Payment?' : 'Reject Payment?'}
+                                </h3>
+                            </div>
+
+                            <p className="mb-6 text-sm font-medium text-slate-400">
+                                Are you sure you want to mark this payment as <span className={`font-bold ${confirmModal.newStatus === 'approved' ? 'text-emerald-400' : 'text-rose-400'}`}>{confirmModal.newStatus}</span>? This action cannot be undone.
+                            </p>
+
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setConfirmModal({ isOpen: false, id: null, newStatus: null })}
+                                    className="flex-1 py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-colors bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleConfirmUpdate}
+                                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-all ${
+                                        confirmModal.newStatus === 'approved' 
+                                            ? 'bg-emerald-500 hover:bg-emerald-400 text-white shadow-lg shadow-emerald-500/20'
+                                            : 'bg-rose-500 hover:bg-rose-400 text-white shadow-lg shadow-rose-500/20'
+                                    }`}
+                                >
+                                    Confirm
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                </AnimatePresence>,
+                document.body
+            )}
         </div>
     );
 };

@@ -40,16 +40,19 @@ const ManualPayments = ({ setActiveTab, previousTab = 'students' }) => {
 
     const handleConfirmUpdate = async () => {
         const { id, newStatus } = confirmModal;
-        setConfirmModal({ isOpen: false, id: null, newStatus: null });
+        if (!id || processing) return;
         
         setProcessing(true);
         try {
             await paymentsAPI.updatePaymentStatus(id, newStatus, user.id);
             success(`Payment marked as ${newStatus}`);
             fetchPayments();
+            setConfirmModal({ isOpen: false, id: null, newStatus: null });
         } catch (err) {
             console.error(`Failed to ${newStatus} payment:`, err);
-            toastError(`Failed to mark payment as ${newStatus}`);
+            toastError(err?.response?.data?.error || `Failed to mark payment as ${newStatus}`);
+            // Also close the modal on error, or keep it open so they see the error
+            setConfirmModal({ isOpen: false, id: null, newStatus: null });
         } finally {
             setProcessing(false);
         }
@@ -240,16 +243,18 @@ const ManualPayments = ({ setActiveTab, previousTab = 'students' }) => {
                             <div className="flex gap-3">
                                 <button
                                     onClick={() => setConfirmModal({ isOpen: false, id: null, newStatus: null })}
-                                    className="flex-1 py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-colors bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white"
+                                    disabled={processing}
+                                    className="flex-1 py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-colors bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white disabled:opacity-50"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     onClick={handleConfirmUpdate}
+                                    disabled={processing}
                                     className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-all ${
                                         confirmModal.newStatus === 'approved' 
-                                            ? 'bg-emerald-500 hover:bg-emerald-400 text-white shadow-lg shadow-emerald-500/20'
-                                            : 'bg-rose-500 hover:bg-rose-400 text-white shadow-lg shadow-rose-500/20'
+                                            ? 'bg-emerald-500 hover:bg-emerald-400 text-white shadow-lg shadow-emerald-500/20 disabled:opacity-50'
+                                            : 'bg-rose-500 hover:bg-rose-400 text-white shadow-lg shadow-rose-500/20 disabled:opacity-50'
                                     }`}
                                 >
                                     Confirm

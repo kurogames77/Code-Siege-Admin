@@ -20,7 +20,8 @@ const ManualPayments = ({ setActiveTab, previousTab = 'students' }) => {
         setLoading(true);
         try {
             const statusFilter = filter === 'all' ? '' : filter;
-            const res = await paymentsAPI.getManualPayments(statusFilter);
+            const role = previousTab === 'guests' ? 'guest' : 'student';
+            const res = await paymentsAPI.getManualPayments(statusFilter, role);
             setPayments(Array.isArray(res) ? res : (res.data || []));
         } catch (err) {
             console.error("Failed to fetch payments:", err);

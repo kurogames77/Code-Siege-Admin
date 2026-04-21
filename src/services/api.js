@@ -252,8 +252,12 @@ export const instructorAPI = {
 };
 
 export const paymentsAPI = {
-    getManualPayments: async (status = '') => {
-        return apiRequest(`/payments/manual?status=${status}`);
+    getManualPayments: async (status = '', role = '') => {
+        let url = `/payments/manual?status=${status}`;
+        if (role) {
+            url += `&role=${role}`;
+        }
+        return apiRequest(url);
     },
     updatePaymentStatus: async (paymentId, status, adminId) => {
         return apiRequest(`/payments/manual/${paymentId}`, {

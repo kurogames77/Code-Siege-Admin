@@ -3,7 +3,7 @@ import { Search, MoreVertical, Trash2, User, Calendar, Clock, Activity, Ban, Ale
 import { motion, AnimatePresence } from 'framer-motion';
 import supabase from '../../lib/supabase';
 import { getRankFromExp } from '../../lib/rankSystem';
-import { instructorAPI } from '../../services/api';
+import { instructorAPI, paymentsAPI } from '../../services/api';
 
 const GuestManagement = ({ theme = 'dark', setActiveTab }) => {
     const [guests, setGuests] = useState([]);
@@ -82,10 +82,23 @@ const GuestManagement = ({ theme = 'dark', setActiveTab }) => {
         }
     };
 
+    const [pendingPaymentsCount, setPendingPaymentsCount] = useState(0);
+
     useEffect(() => {
         fetchGuests();
         fetchBanRequests();
+        fetchPendingPayments();
     }, []);
+
+    const fetchPendingPayments = async () => {
+        try {
+            const res = await paymentsAPI.getManualPayments('pending', 'guest');
+            const data = Array.isArray(res) ? res : (res.data || []);
+            setPendingPaymentsCount(data.length);
+        } catch (error) {
+            console.error('Failed to fetch pending payments:', error);
+        }
+    };
 
     // Ban / Unban a guest
     const handleToggleBan = async (guest) => {
@@ -263,6 +276,11 @@ const GuestManagement = ({ theme = 'dark', setActiveTab }) => {
                                                 title="Payment Verification"
                                             >
                                                 <CreditCard className="w-4 h-4" />
+                                                {pendingPaymentsCount > 0 && (
+                                                    <span className="absolute -top-1.5 -right-1.5 w-5 h-5 flex items-center justify-center bg-rose-500 text-white text-[9px] font-black rounded-full shadow-lg animate-pulse">
+                                                        {pendingPaymentsCount}
+                                                    </span>
+                                                )}
                                             </button>
                                             <button
                                                 onClick={() => setShowBanPanel(!showBanPanel)}

@@ -14,6 +14,7 @@ import StudentCodesManager from '../components/admin/StudentCodesManager';
 import StudentManagement from '../components/admin/StudentManagement';
 import GuestManagement from '../components/admin/GuestManagement';
 import ManualPayments from '../components/admin/ManualPayments';
+import SecurityProtocol from '../components/admin/SecurityProtocol';
 
 const AdminPage = () => {
     const { user, isAuthenticated, loading, logout } = useUser();
@@ -77,13 +78,7 @@ const AdminPage = () => {
             case 'logs':
                 return <SystemLogs theme={theme} />;
             case 'security':
-                return (
-                    <div className="flex flex-col items-center justify-center h-[50vh] text-cyan-500/50">
-                        <div className="text-4xl mb-4">🛡️</div>
-                        <h3 className="text-xl font-black uppercase italic tracking-widest"> Security Protocols</h3>
-                        <p className="text-xs font-bold uppercase tracking-widest mt-2">{`< FIREWALL ACTIVE >`}</p>
-                    </div>
-                );
+                return <SecurityProtocol theme={theme} />;
             default:
                 return <AdminDashboard theme={theme} />;
         }

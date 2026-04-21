@@ -259,8 +259,24 @@ export const paymentsAPI = {
     }
 };
 
+export const securityAPI = {
+    getRecaptchaSettings: async () => {
+        return apiRequest('/instructor/security/recaptcha/settings');
+    },
+    updateRecaptchaSettings: async (enabled) => {
+        return apiRequest('/instructor/security/recaptcha/settings', {
+            method: 'POST',
+            body: JSON.stringify({ enabled }),
+        });
+    },
+    getRecaptchaStats: async () => {
+        return apiRequest('/instructor/security/recaptcha/stats');
+    }
+};
+
 export default {
     instructor: instructorAPI,
     payments: paymentsAPI,
+    security: securityAPI,
 };
 

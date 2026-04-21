@@ -60,6 +60,10 @@ export const authAPI = {
             setToken(null);
         }
     },
+
+    getRecaptchaSettingsPublic: async () => {
+        return apiRequest('/auth/security/recaptcha/settings');
+    }
 };
 
 export const instructorAPI = {

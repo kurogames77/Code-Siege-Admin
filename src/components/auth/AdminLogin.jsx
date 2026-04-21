@@ -20,6 +20,8 @@ const AdminLogin = () => {
     const location = useLocation();
     const toast = useToast();
 
+    const [isRecaptchaRequired, setIsRecaptchaRequired] = useState(true);
+
     useEffect(() => {
         if (location.state?.loggedOut) {
             toast.popup('Admin logged out successfully', 'success');
@@ -27,12 +29,18 @@ const AdminLogin = () => {
         }
     }, [location.state, navigate, toast]);
 
+    useEffect(() => {
+        authAPI.getRecaptchaSettingsPublic()
+            .then(res => setIsRecaptchaRequired(res.enabled))
+            .catch(err => console.error('Failed to fetch recaptcha setting:', err));
+    }, []);
+
     const handleLogin = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError('');
 
-        if (!recaptchaToken) {
+        if (isRecaptchaRequired && !recaptchaToken) {
             setError('Please complete the reCAPTCHA verification');
             setLoading(false);
             return;
@@ -113,18 +121,20 @@ const AdminLogin = () => {
                             </div>
                         </label>
 
-                        <div className="flex justify-center mb-4 mt-2">
-                            {import.meta.env.VITE_RECAPTCHA_SITE_KEY ? (
-                                <ReCAPTCHA
-                                    ref={recaptchaRef}
-                                    sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
-                                    onChange={(token) => setRecaptchaToken(token)}
-                                    theme="dark"
-                                />
-                            ) : (
-                                <div className="text-red-500 text-sm">Error: reCAPTCHA site key is missing in environment variables.</div>
-                            )}
-                        </div>
+                        {isRecaptchaRequired && (
+                            <div className="flex justify-center mb-4 mt-2">
+                                {import.meta.env.VITE_RECAPTCHA_SITE_KEY ? (
+                                    <ReCAPTCHA
+                                        ref={recaptchaRef}
+                                        sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
+                                        onChange={(token) => setRecaptchaToken(token)}
+                                        theme="dark"
+                                    />
+                                ) : (
+                                    <div className="text-red-500 text-sm">Error: reCAPTCHA site key is missing in environment variables.</div>
+                                )}
+                            </div>
+                        )}
 
                         <button
                             className="landing-modal__submit"

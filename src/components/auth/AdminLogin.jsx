@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import ReCAPTCHA from 'react-google-recaptcha';
 import { Shield, Lock, Loader2, AlertCircle, Eye, EyeOff, Terminal } from 'lucide-react';
 import { authAPI } from '../../services/api';
 import { useUser } from '../../contexts/UserContext';
@@ -12,6 +13,8 @@ const AdminLogin = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [recaptchaToken, setRecaptchaToken] = useState(null);
+    const recaptchaRef = useRef(null);
     const { checkAuth } = useUser();
     const navigate = useNavigate();
     const location = useLocation();
@@ -29,8 +32,14 @@ const AdminLogin = () => {
         setLoading(true);
         setError('');
 
+        if (!recaptchaToken) {
+            setError('Please complete the reCAPTCHA verification');
+            setLoading(false);
+            return;
+        }
+
         try {
-            await authAPI.login(adminId, password);
+            await authAPI.login(adminId, password, recaptchaToken);
             await checkAuth();
             toast.popup('Admin authenticated successfully', 'success');
             navigate('/dashboard', { replace: true });
@@ -38,6 +47,10 @@ const AdminLogin = () => {
             console.error('Login error:', err);
             // Generic error message for security to not leak admin existence
             setError('Invalid credentials or unauthorized access.');
+            if (recaptchaRef.current) {
+                recaptchaRef.current.reset();
+                setRecaptchaToken(null);
+            }
         } finally {
             setLoading(false);
         }
@@ -99,6 +112,19 @@ const AdminLogin = () => {
                                 </button>
                             </div>
                         </label>
+
+                        <div className="flex justify-center mb-4 mt-2">
+                            {import.meta.env.VITE_RECAPTCHA_SITE_KEY ? (
+                                <ReCAPTCHA
+                                    ref={recaptchaRef}
+                                    sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
+                                    onChange={(token) => setRecaptchaToken(token)}
+                                    theme="dark"
+                                />
+                            ) : (
+                                <div className="text-red-500 text-sm">Error: reCAPTCHA site key is missing in environment variables.</div>
+                            )}
+                        </div>
 
                         <button
                             className="landing-modal__submit"
